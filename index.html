@@ -198,8 +198,89 @@ severity components and cause/climate categories.
 </div>
 </section>
 
+
+
+<section id="hypothesis">
+    <div class="card">
+    
+    <h2>Hypothesis Testing</h2>
+    
+    <p>
+    Following our exploratory analysis, we formally tested whether outages caused by 
+    <b>severe weather</b> tend to last longer than outages caused by other factors.
+    </p>
+    
+    <h3>Hypotheses</h3>
+    
+    <p>
+    <b>Null Hypothesis (H₀):</b> The mean outage duration for severe weather outages 
+    is equal to the mean outage duration for all other causes.
+    </p>
+    
+    <p>
+    <b>Alternative Hypothesis (H₁):</b> The mean outage duration for severe weather outages 
+    is greater than the mean outage duration for other causes.
+    </p>
+    
+    <h3>Test Statistic</h3>
+    <p>
+    Difference in mean outage duration:
+    <br>
+    <b>T = mean(Duration<sub>severe</sub>) − mean(Duration<sub>other</sub>)</b>
+    </p>
+    
+    <h3>Method</h3>
+    <ul>
+    <li>Performed a permutation test with 10,000 permutations</li>
+    <li>Randomly shuffled outage durations across all rows</li>
+    <li>Recomputed the difference in means for each shuffle</li>
+    <li>Constructed a null distribution of permuted differences</li>
+    <li>Calculated the p-value as the proportion of permuted statistics ≥ observed statistic</li>
+    </ul>
+    
+    <h3>Results</h3>
+    
+    <div class="results-box">
+    
+    <div class="metric">
+    <h3>Observed Difference</h3>
+    <p>≈ 2,538 minutes</p>
+    </div>
+    
+    <div class="metric">
+    <h3>P-value</h3>
+    <p>&lt; 0.001</p>
+    </div>
+    
+    </div>
+    
+    <p style="margin-top:20px;">
+    The observed difference indicates that severe weather outages last, on average,
+    approximately <b>42 hours longer</b> than outages caused by other factors.
+    Since the p-value is less than 0.05, we reject the null hypothesis.
+    </p>
+    
+    <p>
+    There is strong statistical evidence that outage duration depends on cause category.
+    This result supports the importance of weather-related variables and motivates
+    the use of machine learning models for predicting outage severity.
+    </p>
+    
+    </div>
+    </section>
+
+
+
+
+
+
+
+
+
 <section id="modeling">
 <div class="card">
+
+
 <h2>Modeling Approach</h2>
 
 <p>
