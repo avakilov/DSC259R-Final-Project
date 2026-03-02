@@ -1,0 +1,447 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Power Outages Analysis</title>
+  <meta name="description" content="Power Outages Analysis — severity prediction using OUTAGE.DURATION, DEMAND.LOSS.MW, and CUSTOMERS.AFFECTED." />
+
+  <style>
+    :root{
+      --bg:#0b1020;
+      --card:#121a33;
+      --muted:#a9b4d0;
+      --text:#e9eeff;
+      --accent:#6ea8fe;
+      --accent2:#67e8f9;
+      --border:rgba(255,255,255,.12);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+      background: radial-gradient(1200px 800px at 10% 0%, rgba(110,168,254,.20), transparent 55%),
+                  radial-gradient(1200px 800px at 90% 10%, rgba(103,232,249,.14), transparent 60%),
+                  var(--bg);
+      color:var(--text);
+      line-height:1.5;
+    }
+    a{color:var(--accent); text-decoration:none}
+    a:hover{text-decoration:underline}
+    .wrap{max-width:1100px; margin:0 auto; padding:28px 18px 64px}
+    header{
+      position:sticky; top:0; z-index:20;
+      backdrop-filter: blur(10px);
+      background: rgba(11,16,32,.55);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav{
+      max-width:1100px; margin:0 auto; padding:14px 18px;
+      display:flex; align-items:center; justify-content:space-between; gap:16px;
+    }
+    .brand{
+      display:flex; align-items:center; gap:10px;
+      font-weight:800; letter-spacing:.2px;
+    }
+    .dot{
+      width:12px; height:12px; border-radius:999px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      box-shadow:0 0 0 4px rgba(110,168,254,.15);
+    }
+    .links{display:flex; flex-wrap:wrap; gap:12px}
+    .links a{
+      color:var(--muted);
+      padding:6px 10px;
+      border:1px solid transparent;
+      border-radius:999px;
+    }
+    .links a:hover{
+      color:var(--text);
+      border-color:var(--border);
+      text-decoration:none;
+    }
+
+    .hero{
+      padding:36px 0 8px;
+      display:grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap:18px;
+      align-items:stretch;
+    }
+    @media (max-width: 900px){
+      .hero{grid-template-columns: 1fr}
+    }
+    .card{
+      background: rgba(18,26,51,.78);
+      border:1px solid var(--border);
+      border-radius:18px;
+      padding:18px;
+      box-shadow: 0 10px 28px rgba(0,0,0,.25);
+    }
+    h1{
+      margin:0 0 10px;
+      font-size: clamp(26px, 3.2vw, 42px);
+      line-height:1.15;
+    }
+    .subtitle{
+      margin:0 0 14px;
+      color:var(--muted);
+      font-size: 15px;
+      max-width: 68ch;
+    }
+    .pillrow{display:flex; flex-wrap:wrap; gap:10px; margin-top:10px}
+    .pill{
+      border:1px solid var(--border);
+      color:var(--muted);
+      padding:6px 10px;
+      border-radius:999px;
+      font-size: 13px;
+      background: rgba(255,255,255,.03);
+    }
+    .cta{
+      display:flex; flex-wrap:wrap; gap:10px; margin-top:16px;
+    }
+    .btn{
+      display:inline-flex; align-items:center; justify-content:center;
+      gap:8px;
+      padding:10px 12px;
+      border-radius:12px;
+      border:1px solid var(--border);
+      background: rgba(255,255,255,.04);
+      color: var(--text);
+      font-weight:650;
+    }
+    .btn.primary{
+      border-color: transparent;
+      background: linear-gradient(135deg, rgba(110,168,254,.92), rgba(103,232,249,.72));
+      color:#071025;
+    }
+    .btn:hover{filter:brightness(1.06); text-decoration:none}
+
+    section{margin-top:18px}
+    h2{margin:0 0 10px; font-size:22px}
+    .grid{
+      display:grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap:14px;
+    }
+    .col-6{grid-column: span 6}
+    .col-4{grid-column: span 4}
+    .col-12{grid-column: span 12}
+    @media (max-width: 900px){
+      .col-6,.col-4{grid-column: span 12}
+    }
+
+    ul{margin:8px 0 0 18px; color:var(--muted)}
+    .muted{color:var(--muted)}
+    .kpi{
+      display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;
+    }
+    .kpi .tile{
+      min-width: 180px;
+      padding:12px;
+      border-radius:16px;
+      border:1px solid var(--border);
+      background: rgba(255,255,255,.03);
+    }
+    .tile .label{font-size:12px; color:var(--muted)}
+    .tile .value{font-size:18px; font-weight:800; margin-top:3px}
+    .tile .note{font-size:12px; color:var(--muted); margin-top:4px}
+
+    .viz{
+      border:1px dashed rgba(255,255,255,.25);
+      border-radius:14px;
+      padding:12px;
+      background: rgba(0,0,0,.14);
+      overflow:hidden;
+    }
+    .viz iframe{
+      width:100%;
+      height:420px;
+      border:0;
+      border-radius:10px;
+      background:white;
+    }
+    .small iframe{height:340px}
+
+    footer{
+      margin-top:28px;
+      padding-top:16px;
+      border-top:1px solid var(--border);
+      color:var(--muted);
+      font-size: 13px;
+      display:flex;
+      justify-content:space-between;
+      gap:14px;
+      flex-wrap:wrap;
+    }
+    code.inline{
+      padding:2px 6px;
+      border-radius:8px;
+      background: rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.12);
+      color: var(--text);
+      font-size: 12px;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <div class="nav">
+      <div class="brand">
+        <span class="dot"></span>
+        <span>Power Outages Analysis</span>
+      </div>
+      <nav class="links">
+        <a href="#overview">Overview</a>
+        <a href="#data">Data</a>
+        <a href="#eda">EDA</a>
+        <a href="#modeling">Modeling</a>
+        <a href="#results">Results</a>
+        <a href="#repo">Repo</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <div class="hero">
+      <div class="card">
+        <h1>Power Outages Analysis</h1>
+        <p class="subtitle">
+          We analyze major power outages and predict an outage <b>severity score</b> built from
+          <span class="inline"><code class="inline">OUTAGE.DURATION</code></span>,
+          <span class="inline"><code class="inline">DEMAND.LOSS.MW</code></span>, and
+          <span class="inline"><code class="inline">CUSTOMERS.AFFECTED</code></span>.
+          This is a regression problem with severity as a continuous target.
+        </p>
+
+        <div class="pillrow">
+          <span class="pill">Severity Score = z(log1p(duration)) + z(log1p(demand loss)) + z(log1p(customers))</span>
+          <span class="pill">Interactive EDA (Plotly)</span>
+          <span class="pill">Models: Baseline → Random Forest → Boosting</span>
+        </div>
+
+        <div class="cta">
+          <!-- Replace the href values with your real links -->
+          <a class="btn primary" href="https://github.com/avakilov/DSC259R-Final-Project" target="_blank" rel="noreferrer">
+            View GitHub Repo
+          </a>
+          <a class="btn" href="outage.ipynb" target="_blank" rel="noreferrer">
+            Open Notebook
+          </a>
+          <a class="btn" href="#results">
+            See Results
+          </a>
+        </div>
+
+        <div class="kpi">
+          <div class="tile">
+            <div class="label">Dataset</div>
+            <div class="value">Power Outages</div>
+            <div class="note">Cleaned + engineered features</div>
+          </div>
+          <div class="tile">
+            <div class="label">Target</div>
+            <div class="value">Severity Score</div>
+            <div class="note">Continuous regression target</div>
+          </div>
+          <div class="tile">
+            <div class="label">Baseline Model</div>
+            <div class="value">Gaussian</div>
+            <div class="note">No features (random guess)</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" id="overview">
+        <h2>Project Goals</h2>
+        <ul>
+          <li>Understand relationships among outage duration, customers affected, and demand loss.</li>
+          <li>Define a meaningful, continuous measure of outage severity.</li>
+          <li>Train models to predict severity from available covariates (economic/demographic/climate).</li>
+          <li>Use EDA to motivate hypothesis tests (e.g., severe weather vs other causes).</li>
+        </ul>
+
+        <h2 style="margin-top:14px;">Team</h2>
+        <p class="muted" style="margin:8px 0 0;">
+          Aryslanbek Vakilov + Group Members
+          <!-- Replace "Group Members" with names if you want -->
+        </p>
+      </div>
+    </div>
+
+    <section class="card" id="data">
+      <h2>Data & Features</h2>
+      <p class="muted" style="margin:6px 0 0;">
+        We use climate, cause, time, and economic/demographic indicators to predict severity.
+        The severity score is constructed from three core outage-impact variables and log-transformed to address heavy skew.
+      </p>
+      <div class="grid" style="margin-top:12px;">
+        <div class="col-6">
+          <h3 style="margin:0 0 8px;">Key Severity Components</h3>
+          <ul>
+            <li>OUTAGE.DURATION (minutes/hours depending on dataset definition)</li>
+            <li>DEMAND.LOSS.MW</li>
+            <li>CUSTOMERS.AFFECTED</li>
+          </ul>
+        </div>
+        <div class="col-6">
+          <h3 style="margin:0 0 8px;">Example Predictors</h3>
+          <ul>
+            <li>CAUSE.CATEGORY, CLIMATE.CATEGORY, ANOMALY.LEVEL</li>
+            <li>RES/COM/IND/TOTAL PRICE and SALES features</li>
+            <li>Population density features (POPDEN_UC, POPDEN_RURAL, etc.)</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" id="eda">
+      <h2>Exploratory Data Analysis (EDA)</h2>
+      <p class="muted" style="margin:6px 0 0;">
+        Below are example slots for 5–6 bivariate plots (scatter + box/stacked bar). To make interactive Plotly charts
+        reliably visible on GitHub Pages, export each Plotly figure to HTML and embed it here.
+      </p>
+
+      <div class="grid" style="margin-top:12px;">
+        <div class="col-6 viz">
+          <h3 style="margin:0 0 8px;">1) Log(Duration) vs Log(Customers)</h3>
+          <!-- Replace src with exported HTML, e.g. "plots/duration_vs_customers.html" -->
+          <iframe src="plots/duration_vs_customers.html" title="duration vs customers"></iframe>
+          <p class="muted" style="margin:8px 0 0;font-size:13px;">
+            Shows whether longer outages tend to affect more customers.
+          </p>
+        </div>
+
+        <div class="col-6 viz">
+          <h3 style="margin:0 0 8px;">2) Log(Duration) vs Log(Demand Loss)</h3>
+          <iframe src="plots/duration_vs_demand.html" title="duration vs demand"></iframe>
+          <p class="muted" style="margin:8px 0 0;font-size:13px;">
+            Highlights the relationship between duration and economic impact.
+          </p>
+        </div>
+
+        <div class="col-6 viz">
+          <h3 style="margin:0 0 8px;">3) Log(Customers) vs Log(Demand Loss)</h3>
+          <iframe src="plots/customers_vs_demand.html" title="customers vs demand"></iframe>
+          <p class="muted" style="margin:8px 0 0;font-size:13px;">
+            Tests whether demand loss scales with affected customers.
+          </p>
+        </div>
+
+        <div class="col-6 viz">
+          <h3 style="margin:0 0 8px;">4) Log(Duration) by Cause Category (Box Plot)</h3>
+          <iframe src="plots/duration_by_cause.html" title="duration by cause"></iframe>
+          <p class="muted" style="margin:8px 0 0;font-size:13px;">
+            Compares distributions across causes to motivate hypothesis tests.
+          </p>
+        </div>
+
+        <div class="col-6 viz small">
+          <h3 style="margin:0 0 8px;">5) Customers by Climate Category (Box Plot)</h3>
+          <iframe src="plots/customers_by_climate.html" title="customers by climate"></iframe>
+        </div>
+
+        <div class="col-6 viz small">
+          <h3 style="margin:0 0 8px;">6) Severity Level by Cause (Stacked Bar)</h3>
+          <iframe src="plots/severity_by_cause.html" title="severity by cause"></iframe>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:14px;">
+        <h3 style="margin:0 0 8px;">How to export Plotly plots for embedding</h3>
+        <p class="muted" style="margin:0;">
+          In your notebook, after creating a Plotly figure (e.g., <code class="inline">fig</code>), run:
+        </p>
+        <pre style="margin:10px 0 0; padding:12px; border-radius:14px; background:rgba(0,0,0,.22); border:1px solid var(--border); overflow:auto;"><code>import os
+os.makedirs("plots", exist_ok=True)
+
+fig.write_html("plots/duration_vs_customers.html", include_plotlyjs="cdn")</code></pre>
+        <p class="muted" style="margin:10px 0 0;">
+          Then commit the <code class="inline">plots/</code> folder and this <code class="inline">index.html</code> to GitHub,
+          enable GitHub Pages, and the plots will render on your site.
+        </p>
+      </div>
+    </section>
+
+    <section class="card" id="modeling">
+      <h2>Modeling Approach</h2>
+      <div class="grid" style="margin-top:10px;">
+        <div class="col-6">
+          <h3 style="margin:0 0 8px;">Baseline</h3>
+          <p class="muted" style="margin:0;">
+            A Gaussian baseline predicts random values drawn from the training severity distribution.
+            It does not use features and serves as a minimal benchmark.
+          </p>
+        </div>
+        <div class="col-6">
+          <h3 style="margin:0 0 8px;">Random Forest + Next Models</h3>
+          <ul>
+            <li>RandomForestRegressor (tuned depth/trees)</li>
+            <li>GradientBoostingRegressor / HistGradientBoostingRegressor</li>
+            <li>XGBoost (optional, if installed)</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <section class="card" id="results">
+      <h2>Results Summary</h2>
+      <p class="muted" style="margin:6px 0 0;">
+        Replace the placeholder numbers below with your final results (RMSE / R²). Include a short interpretation.
+      </p>
+
+      <div class="grid" style="margin-top:12px;">
+        <div class="col-4">
+          <div class="tile">
+            <div class="label">Gaussian Baseline</div>
+            <div class="value">R²: -1.02</div>
+            <div class="note">RMSE ≈ 3.61 (example)</div>
+          </div>
+        </div>
+        <div class="col-4">
+          <div class="tile">
+            <div class="label">Random Forest (baseline)</div>
+            <div class="value">R²: 0.19</div>
+            <div class="note">RMSE ≈ 2.28 (example)</div>
+          </div>
+        </div>
+        <div class="col-4">
+          <div class="tile">
+            <div class="label">Best Tuned Model</div>
+            <div class="value">R²: ___</div>
+            <div class="note">RMSE: ___</div>
+          </div>
+        </div>
+      </div>
+
+      <p class="muted" style="margin-top:12px;">
+        Overall, EDA indicates strong positive associations among the three severity components, and cause/climate categories
+        show meaningful differences in outage impact. This motivates our severity construction and supports a regression approach.
+      </p>
+    </section>
+
+    <section class="card" id="repo">
+      <h2>Repository & Artifacts</h2>
+      <ul>
+        <li><a href="https://github.com/avakilov/DSC259R-Final-Project" target="_blank" rel="noreferrer">GitHub repository</a></li>
+        <li><a href="outage.ipynb" target="_blank" rel="noreferrer">Notebook (outage.ipynb)</a></li>
+        <li><span class="muted">Optional:</span> add a link to nbviewer for notebook rendering</li>
+      </ul>
+      <p class="muted" style="margin-top:10px;">
+        Tip: GitHub sometimes doesn’t render interactive notebook outputs. Embedding exported Plotly HTML in this page is the most reliable approach.
+      </p>
+    </section>
+
+    <footer>
+      <div>© <span id="yr"></span> Power Outages Analysis — Aryslanbek Vakilov</div>
+      <div class="muted">Built for DSC259R Final Project</div>
+    </footer>
+  </main>
+
+  <script>
+    document.getElementById("yr").textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
