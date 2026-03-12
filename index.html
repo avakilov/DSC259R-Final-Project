@@ -124,7 +124,8 @@ footer {
     <a href="#overview">Overview</a>
     <a href="#data">Data</a>
     <a href="#eda">EDA</a>
-    <a href ="#hypothesis"> Hypotheses Testing</a>
+    <a href="#missingness">Missingness</a>
+    <a href="#hypothesis">Hypothesis Testing</a>
     <a href="#modeling">Modeling</a>
     <a href="#results">Results</a>
 </nav>
@@ -177,7 +178,6 @@ box plots, and stacked bar charts to explore relationships between
 severity components and cause/climate categories.
 </p>
 
-<!-- Replace these with your exported Plotly HTML files -->
 <h3>Example Plot 1: Duration vs Customers</h3>
 <iframe src="plots/duration_vs_customers.html"></iframe>
 
@@ -192,149 +192,121 @@ severity components and cause/climate categories.
 
 <h3>Example Plot 5: Severity Level by Cause Category</h3>
 <iframe src="plots/severity_level_by_cause_category.html"></iframe>
+</div>
+</section>
 
+<section id="missingness">
+<div class="card">
 
+<h2>Missingness Analysis</h2>
 
+<p>
+We examined missing values in the dataset to understand whether missing data
+occurred randomly or was associated with other variables. Several columns
+contained missing values, including OUTAGE.DURATION, DEMAND.LOSS.MW,
+and CUSTOMERS.AFFECTED, with DEMAND.LOSS.MW having the largest amount
+of missing data.
+</p>
+
+<ul>
+<li>OUTAGE.DURATION – 58 missing values</li>
+<li>DEMAND.LOSS.MW – 705 missing values</li>
+<li>CUSTOMERS.AFFECTED – 443 missing values</li>
+</ul>
+
+<h3>Outage Duration by DEMAND.LOSS.MW Missingness</h3>
+<iframe src="plots/missing_duration.html"></iframe>
+
+<p>
+The distributions of outage duration look similar whether DEMAND.LOSS.MW
+is missing or present. A permutation test confirmed that missingness does
+not depend on outage duration (p = 0.6824).
+</p>
+
+<h3>Cause Category by DEMAND.LOSS.MW Missingness</h3>
+<iframe src="plots/missing_cause.html"></iframe>
+
+<p>
+However, missingness in DEMAND.LOSS.MW varies across outage causes.
+A permutation test showed strong evidence that missingness depends on
+CAUSE.CATEGORY (p &lt; 0.001), suggesting that missing data is related
+to outage type rather than outage duration.
+</p>
 
 </div>
 </section>
 
-
-
-
-<section id="missingness">
-    <div class="card">
-    
-    <h2>Missingness Analysis</h2>
-    
-    <p>
-    We examined missing values in the dataset to understand whether missing data
-    occurred randomly or was associated with other variables. Several columns
-    contained missing values, including OUTAGE.DURATION, DEMAND.LOSS.MW,
-    and CUSTOMERS.AFFECTED, with DEMAND.LOSS.MW having the largest amount
-    of missing data.
-    </p>
-    
-    <ul>
-    <li>OUTAGE.DURATION – 58 missing values</li>
-    <li>DEMAND.LOSS.MW – 705 missing values</li>
-    <li>CUSTOMERS.AFFECTED – 443 missing values</li>
-    </ul>
-    
-    <h3>Outage Duration by DEMAND.LOSS.MW Missingness</h3>
-    <iframe src="plots/missing_duration.html"></iframe>
-    
-    <p>
-    The distributions of outage duration look similar whether DEMAND.LOSS.MW
-    is missing or present. A permutation test confirmed that missingness does
-    not depend on outage duration (p = 0.6824).
-    </p>
-    
-    <h3>Cause Category by DEMAND.LOSS.MW Missingness</h3>
-    <iframe src="plots/missing_cause.html"></iframe>
-    
-    <p>
-    However, missingness in DEMAND.LOSS.MW varies across outage causes.
-    A permutation test showed strong evidence that missingness depends on
-    CAUSE.CATEGORY (p &lt; 0.001), suggesting that missing data is related
-    to outage type rather than outage duration.
-    </p>
-    
-    </div>
-    </section>
-
-
-
-
-
-
-
-
 <section id="hypothesis">
-    <div class="card">
-    
-    <h2>Hypothesis Testing</h2>
-    
-    <p>
-    Following our exploratory analysis, we formally tested whether outages caused by 
-    <b>severe weather</b> tend to last longer than outages caused by other factors.
-    </p>
-    
-    <h3>Hypotheses</h3>
-    
-    <p>
-    <b>Null Hypothesis (H₀):</b> The mean outage duration for severe weather outages 
-    is equal to the mean outage duration for all other causes.
-    </p>
-    
-    <p>
-    <b>Alternative Hypothesis (H₁):</b> The mean outage duration for severe weather outages 
-    is greater than the mean outage duration for other causes.
-    </p>
-    
-    <h3>Test Statistic</h3>
-    <p>
-    Difference in mean outage duration:
-    <br>
-    <b>T = mean(Duration<sub>severe</sub>) − mean(Duration<sub>other</sub>)</b>
-    </p>
-    
-    <h3>Method</h3>
-    <ul>
-    <li>Performed a permutation test with 10,000 permutations</li>
-    <li>Randomly shuffled outage durations across all rows</li>
-    <li>Recomputed the difference in means for each shuffle</li>
-    <li>Constructed a null distribution of permuted differences</li>
-    <li>Calculated the p-value as the proportion of permuted statistics ≥ observed statistic</li>
-    </ul>
-    
-    <h3>Results</h3>
-    
-    <div class="results-box">
-    
-    <div class="metric">
-    <h3>Observed Difference</h3>
-    <p>≈ 2,538 minutes</p>
-    </div>
-    
-    <div class="metric">
-    <h3>P-value</h3>
-    <p>&lt; 0.001</p>
-    </div>
-    
-    </div>
-    
-    <p style="margin-top:20px;">
-    The observed difference indicates that severe weather outages last, on average,
-    approximately <b>42 hours longer</b> than outages caused by other factors.
-    Since the p-value is less than 0.05, we reject the null hypothesis.
-    </p>
-    
-    <p>
-    There is strong statistical evidence that outage duration depends on cause category.
-    This result supports the importance of weather-related variables and motivates
-    the use of machine learning models for predicting outage severity.
-    </p>
-    
-    </div>
-    </section>
+<div class="card">
 
+<h2>Hypothesis Testing</h2>
 
+<p>
+Following our exploratory analysis, we formally tested whether outages caused by 
+<b>severe weather</b> tend to last longer than outages caused by other factors.
+</p>
 
+<h3>Hypotheses</h3>
 
-   
+<p>
+<b>Null Hypothesis (H₀):</b> The mean outage duration for severe weather outages 
+is equal to the mean outage duration for all other causes.
+</p>
 
+<p>
+<b>Alternative Hypothesis (H₁):</b> The mean outage duration for severe weather outages 
+is greater than the mean outage duration for other causes.
+</p>
 
+<h3>Test Statistic</h3>
+<p>
+Difference in mean outage duration:
+<br>
+<b>T = mean(Duration<sub>severe</sub>) − mean(Duration<sub>other</sub>)</b>
+</p>
 
+<h3>Method</h3>
+<ul>
+<li>Performed a permutation test with 10,000 permutations</li>
+<li>Randomly shuffled outage durations across all rows</li>
+<li>Recomputed the difference in means for each shuffle</li>
+<li>Constructed a null distribution of permuted differences</li>
+<li>Calculated the p-value as the proportion of permuted statistics ≥ observed statistic</li>
+</ul>
 
+<h3>Results</h3>
 
+<div class="results-box">
 
+<div class="metric">
+<h3>Observed Difference</h3>
+<p>≈ 2,538 minutes</p>
+</div>
 
+<div class="metric">
+<h3>P-value</h3>
+<p>&lt; 0.001</p>
+</div>
 
+</div>
+
+<p style="margin-top:20px;">
+The observed difference indicates that severe weather outages last, on average,
+approximately <b>42 hours longer</b> than outages caused by other factors.
+Since the p-value is less than 0.05, we reject the null hypothesis.
+</p>
+
+<p>
+There is strong statistical evidence that outage duration depends on cause category.
+This result supports the importance of weather-related variables and motivates
+the use of machine learning models for predicting outage severity.
+</p>
+
+</div>
+</section>
 
 <section id="modeling">
 <div class="card">
-
 
 <h2>Modeling Approach</h2>
 
@@ -350,7 +322,63 @@ economic, climate, and demographic variables and outage severity.
 <li>Feature Engineering: Log-transform + standardization</li>
 </ul>
 
-<p> We improved the baseline model by using cross-validation for more reliable performance and tuning hyperparameters with GridSearch to optimize accuracy. We also analyzed feature importance to better understand the key drivers of outage severity.
+<p>
+We improved the baseline model by using cross-validation for more reliable
+performance and tuning hyperparameters with GridSearch to optimize accuracy.
+We also analyzed feature importance to better understand the key drivers of outage severity.
+</p>
+
+</div>
+</section>
+
+<section id="xgboost-model">
+<div class="card">
+
+<h2>XGBoost Model</h2>
+
+<p>
+We trained an <b>XGBoost Regressor</b> as an additional boosting-based model
+to compare with the Random Forest baseline. XGBoost builds decision trees
+sequentially, allowing each new tree to correct the errors of previous trees.
+This makes it effective for capturing more complex nonlinear relationships in
+the outage data.
+</p>
+
+<ul>
+<li>Train/Test Split: 80% / 20%</li>
+<li>Evaluation Metrics: MAE, RMSE, and R²</li>
+<li>Feature Engineering: log-transform + standardization</li>
+</ul>
+
+<p>
+On the log-transformed target space, XGBoost improved substantially over the
+baseline model and demonstrated strong predictive performance.
+</p>
+
+</div>
+</section>
+
+<section id="lightgbm-model">
+<div class="card">
+
+<h2>LightGBM Model (Final Model)</h2>
+
+<p>
+We then trained a <b>LightGBM Regressor</b> as our final model. LightGBM is a
+gradient boosting framework optimized for fast and efficient learning on structured
+tabular data. Its leaf-wise growth strategy allows it to capture highly complex
+patterns while maintaining strong computational efficiency.
+</p>
+
+<ul>
+<li>Train/Test Split: 80% / 20%</li>
+<li>Evaluation Metrics: MAE, RMSE, and R²</li>
+<li>Feature Engineering: log-transform + standardization</li>
+</ul>
+
+<p>
+Among all models tested, LightGBM achieved the best overall performance and was
+selected as the final model for outage severity prediction.
 </p>
 
 </div>
@@ -358,119 +386,54 @@ economic, climate, and demographic variables and outage severity.
 
 <section id="results">
 <div class="card">
-<h2>Results</h2>
+<h2>Model Comparison Results</h2>
 
 <div class="results-box">
 
 <div class="metric">
 <h3>Baseline Model</h3>
-<p>Random Forest</p>
+<p>
+Random Forest<br>
+R² ≈ 0.31<br>
+RMSE ≈ 2.11
+</p>
 </div>
 
 <div class="metric">
-<h3>R² Score</h3>
-<p>≈ 0.31</p>
+<h3>XGBoost</h3>
+<p>
+R² ≈ 0.83<br>
+RMSE ≈ 1.19<br>
+MAE ≈ 0.67
+</p>
 </div>
 
 <div class="metric">
-<h3>RMSE</h3>
-<p>≈ 2.11</p>
+<h3>Final Model</h3>
+<p>
+LightGBM<br>
+R² ≈ 0.99<br>
+RMSE ≈ 0.28<br>
+MAE ≈ 0.11
+</p>
 </div>
-
 
 </div>
 
 <p style="margin-top:20px;">
-Our Random Forest baseline model demonstrates solid predictive performance, indicating that outage severity can be meaningfully estimated using economic, climate, and demographic features. The severity score captures important patterns in outage impact, though some variability remains unexplained. In the next phase, we will train and compare additional models to further improve predictive accuracy and better understand the drivers of outage severity.
+We compared three tree-based models for predicting outage severity:
+Random Forest, XGBoost, and LightGBM. While the Random Forest provided
+a strong baseline, the boosting-based models captured more complex
+relationships in the data and substantially improved predictive performance.
+</p>
+
+<p>
+LightGBM achieved the best results, with the highest R² and lowest error
+metrics, and was selected as the final model for predicting outage severity.
 </p>
 
 </div>
 </section>
-
-
-
-
-
-
-
-
-
-<section id="xgboost-model">
-    <div class="card">
-    
-    <h2>XGBoost Model</h2>
-    
-    <p>
-    We trained an XGBoost Regressor as an additional boosting-based model to
-    compare with the Random Forest baseline. XGBoost builds decision trees
-    sequentially, allowing each new tree to correct the errors of previous
-    trees. This approach can capture complex nonlinear relationships in the
-    data and often improves predictive performance for tabular datasets.
-    </p>
-    
-    <ul>
-    <li>Train/Test Split: 80% / 20%</li>
-    <li>Evaluation Metrics: MAE, RMSE, and R²</li>
-    <li>Feature Engineering: log-transform + standardization</li>
-    </ul>
-    
-    </div>
-    </section>
-
-    <div class="metric">
-        <h3>XGBoost</h3>
-        <p>
-        R² ≈ 0.83<br>
-        RMSE ≈ 1.19<br>
-        MAE ≈ 0.67
-        </p>
-        </div>
-
-        <section id="lightgbm-model">
-            <div class="card">
-            
-            <h2>LightGBM Model (Final Model)</h2>
-            
-            <p>
-            To further improve performance, we trained a LightGBM Regressor, a
-            gradient boosting framework optimized for efficiency and high
-            performance on tabular datasets. LightGBM uses a leaf-wise tree growth
-            strategy and histogram-based learning, allowing it to capture complex
-            patterns in the data while remaining computationally efficient.
-            </p>
-            
-            <ul>
-            <li>Train/Test Split: 80% / 20%</li>
-            <li>Evaluation Metrics: MAE, RMSE, and R²</li>
-            <li>Feature Engineering: log-transform + standardization</li>
-            </ul>
-            
-            <p>
-            Among all models tested, LightGBM achieved the strongest predictive
-            performance, explaining nearly all variation in the log-transformed
-            severity measure.
-            </p>
-            
-            </div>
-            </section>
-
-            <p style="margin-top:20px;">
-                We compared three tree-based models for predicting outage severity:
-                Random Forest, XGBoost, and LightGBM. While the Random Forest provided
-                a strong baseline, gradient boosting models captured more complex
-                relationships in the data. LightGBM achieved the best performance,
-                with the highest R² and lowest error metrics, and was selected as the
-                final model for predicting outage severity.
-                </p>
-
-
-
-
-
-
-
-
-
 
 <footer>
 © 2025 BeautifulSoup | DSC 259R Final Project  
