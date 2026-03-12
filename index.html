@@ -128,6 +128,7 @@ footer {
     <a href="#hypothesis">Hypothesis Testing</a>
     <a href="#modeling">Modeling</a>
     <a href="#results">Results</a>
+    <a href="#fairness">Fairness Analysis</a>
 </nav>
 
 <section id="overview">
@@ -242,19 +243,19 @@ to outage type rather than outage duration.
 <h2>Hypothesis Testing</h2>
 
 <p>
-Following our exploratory analysis, we formally tested whether outages caused by 
+Following our exploratory analysis, we formally tested whether outages caused by
 <b>severe weather</b> tend to last longer than outages caused by other factors.
 </p>
 
 <h3>Hypotheses</h3>
 
 <p>
-<b>Null Hypothesis (H₀):</b> The mean outage duration for severe weather outages 
+<b>Null Hypothesis (H₀):</b> The mean outage duration for severe weather outages
 is equal to the mean outage duration for all other causes.
 </p>
 
 <p>
-<b>Alternative Hypothesis (H₁):</b> The mean outage duration for severe weather outages 
+<b>Alternative Hypothesis (H₁):</b> The mean outage duration for severe weather outages
 is greater than the mean outage duration for other causes.
 </p>
 
@@ -435,8 +436,92 @@ metrics, and was selected as the final model for predicting outage severity.
 </div>
 </section>
 
+<section id="fairness">
+<div class="card">
+
+<h2>Fairness Analysis</h2>
+
+<p>
+We evaluated the fairness of our final <b>LightGBM</b> model by comparing its
+performance across two seasonal groups: <b>Spring/Fall</b> and <b>Summer/Winter</b>.
+The goal was to test whether the model systematically performed worse for one
+group than the other on the held-out test set.
+</p>
+
+<ul>
+<li>Spring/Fall group size: 66</li>
+<li>Summer/Winter group size: 100</li>
+<li>Metric used for fairness comparison: R² in log space</li>
+<li>Statistical method: permutation test with 5,000 permutations</li>
+</ul>
+
+<div class="results-box">
+
+<div class="metric">
+<h3>Spring/Fall</h3>
+<p>
+R² ≈ 0.9878<br>
+MAE ≈ 0.1220
+</p>
+</div>
+
+<div class="metric">
+<h3>Summer/Winter</h3>
+<p>
+R² ≈ 0.9929<br>
+MAE ≈ 0.1056
+</p>
+</div>
+
+<div class="metric">
+<h3>Permutation Test</h3>
+<p>
+Observed Difference ≈ 0.0051<br>
+p-value ≈ 0.6851
+</p>
+</div>
+
+</div>
+
+<p style="margin-top:20px;">
+The model achieved very high predictive performance in both seasonal groups,
+with Summer/Winter performing slightly better than Spring/Fall. However, the
+permutation test produced a p-value of 0.6851, so we fail to reject the null
+hypothesis. This means there is <b>no strong statistical evidence of seasonal
+unfairness</b> in the final model.
+</p>
+
+<p>
+Overall, the fairness analysis suggests that our LightGBM model performs
+consistently across the two season groups and does not systematically
+disadvantage one group over the other.
+</p>
+
+<h3>Optional Fairness Plots</h3>
+<p>
+If exported from the notebook, you can embed fairness visualizations here such as:
+</p>
+<ul>
+<li>R² comparison by season group</li>
+<li>Permutation null distribution</li>
+<li>Predicted vs actual demand loss by season group</li>
+<li>Residual distribution by season group</li>
+</ul>
+
+<!-- Example iframes, uncomment after exporting plotly html files -->
+<!--
+<h3>R² by Season Group</h3>
+<iframe src="plots/fairness_r2_by_season.html"></iframe>
+
+<h3>Permutation Null Distribution</h3>
+<iframe src="plots/fairness_permutation_null.html"></iframe>
+-->
+
+</div>
+</section>
+
 <footer>
-© 2025 BeautifulSoup | DSC 259R Final Project  
+© 2025 BeautifulSoup | DSC 259R Final Project
 Power Outages Analysis
 </footer>
 
