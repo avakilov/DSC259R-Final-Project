@@ -322,6 +322,77 @@ severity components and cause/climate categories.
 
 
 
+    <section id="xgboost-model">
+        <div class="card">
+        
+        <h2>XGBoost Model</h2>
+        
+        <p>
+        We trained an XGBoost Regressor as an additional boosting-based model to
+        compare with the Random Forest baseline. XGBoost builds decision trees
+        sequentially, allowing each new tree to correct the errors of previous
+        trees. This approach can capture complex nonlinear relationships in the
+        data and often improves predictive performance for tabular datasets.
+        </p>
+        
+        <ul>
+        <li>Train/Test Split: 80% / 20%</li>
+        <li>Evaluation Metrics: MAE, RMSE, and R²</li>
+        <li>Feature Engineering: log-transform + standardization</li>
+        </ul>
+        
+        </div>
+        </section>
+
+        <div class="metric">
+            <h3>XGBoost</h3>
+            <p>
+            R² ≈ 0.83<br>
+            RMSE ≈ 1.19<br>
+            MAE ≈ 0.67
+            </p>
+            </div>
+
+            <section id="lightgbm-model">
+                <div class="card">
+                
+                <h2>LightGBM Model (Final Model)</h2>
+                
+                <p>
+                To further improve performance, we trained a LightGBM Regressor, a
+                gradient boosting framework optimized for efficiency and high
+                performance on tabular datasets. LightGBM uses a leaf-wise tree growth
+                strategy and histogram-based learning, allowing it to capture complex
+                patterns in the data while remaining computationally efficient.
+                </p>
+                
+                <ul>
+                <li>Train/Test Split: 80% / 20%</li>
+                <li>Evaluation Metrics: MAE, RMSE, and R²</li>
+                <li>Feature Engineering: log-transform + standardization</li>
+                </ul>
+                
+                <p>
+                Among all models tested, LightGBM achieved the strongest predictive
+                performance, explaining nearly all variation in the log-transformed
+                severity measure.
+                </p>
+                
+                </div>
+                </section>
+
+                <p style="margin-top:20px;">
+                    We compared three tree-based models for predicting outage severity:
+                    Random Forest, XGBoost, and LightGBM. While the Random Forest provided
+                    a strong baseline, gradient boosting models captured more complex
+                    relationships in the data. LightGBM achieved the best performance,
+                    with the highest R² and lowest error metrics, and was selected as the
+                    final model for predicting outage severity.
+                    </p>
+
+
+
+
 
 
 
