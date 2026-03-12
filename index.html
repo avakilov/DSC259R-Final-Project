@@ -66,6 +66,10 @@ h2 {
     color: #60a5fa;
 }
 
+h3 {
+    margin-top: 24px;
+}
+
 ul {
     line-height: 1.8;
 }
@@ -76,6 +80,7 @@ iframe {
     border: none;
     border-radius: 8px;
     margin-top: 15px;
+    background: white;
 }
 
 .results-box {
@@ -497,25 +502,26 @@ consistently across the two season groups and does not systematically
 disadvantage one group over the other.
 </p>
 
-<h3>Optional Fairness Plots</h3>
-<p>
-If exported from the notebook, you can embed fairness visualizations here such as:
-</p>
-<ul>
-<li>R² comparison by season group</li>
-<li>Permutation null distribution</li>
-<li>Predicted vs actual demand loss by season group</li>
-<li>Residual distribution by season group</li>
-</ul>
-
-<!-- Example iframes, uncomment after exporting plotly html files -->
-<!--
-<h3>R² by Season Group</h3>
-<iframe src="plots/fairness_r2_by_season.html"></iframe>
-
 <h3>Permutation Null Distribution</h3>
 <iframe src="plots/fairness_permutation_null.html"></iframe>
--->
+
+<p>
+This plot shows the null distribution of the permuted fairness test statistic.
+The dashed vertical line marks the observed difference in R² between the two
+season groups. Because the observed statistic is not extreme relative to the
+null distribution, the permutation test indicates no statistically significant
+seasonal unfairness.
+</p>
+
+<h3>Residual Distribution by Season Group</h3>
+<iframe src="plots/fairness_residual_distribution.html"></iframe>
+
+<p>
+The residual distributions are centered similarly for both groups, which suggests
+that prediction errors are balanced across seasons. This provides additional
+evidence that the final model behaves consistently for Spring/Fall and
+Summer/Winter observations.
+</p>
 
 </div>
 </section>
