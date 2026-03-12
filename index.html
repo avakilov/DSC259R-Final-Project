@@ -201,6 +201,55 @@ severity components and cause/climate categories.
 
 
 
+
+<section id="missingness">
+    <div class="card">
+    
+    <h2>Missingness Analysis</h2>
+    
+    <p>
+    We examined missing values in the dataset to understand whether missing data
+    occurred randomly or was associated with other variables. Several columns
+    contained missing values, including OUTAGE.DURATION, DEMAND.LOSS.MW,
+    and CUSTOMERS.AFFECTED, with DEMAND.LOSS.MW having the largest amount
+    of missing data.
+    </p>
+    
+    <ul>
+    <li>OUTAGE.DURATION – 58 missing values</li>
+    <li>DEMAND.LOSS.MW – 705 missing values</li>
+    <li>CUSTOMERS.AFFECTED – 443 missing values</li>
+    </ul>
+    
+    <h3>Outage Duration by DEMAND.LOSS.MW Missingness</h3>
+    <iframe src="plots/missing_duration.html"></iframe>
+    
+    <p>
+    The distributions of outage duration look similar whether DEMAND.LOSS.MW
+    is missing or present. A permutation test confirmed that missingness does
+    not depend on outage duration (p = 0.6824).
+    </p>
+    
+    <h3>Cause Category by DEMAND.LOSS.MW Missingness</h3>
+    <iframe src="plots/missing_cause.html"></iframe>
+    
+    <p>
+    However, missingness in DEMAND.LOSS.MW varies across outage causes.
+    A permutation test showed strong evidence that missingness depends on
+    CAUSE.CATEGORY (p &lt; 0.001), suggesting that missing data is related
+    to outage type rather than outage duration.
+    </p>
+    
+    </div>
+    </section>
+
+
+
+
+
+
+
+
 <section id="hypothesis">
     <div class="card">
     
