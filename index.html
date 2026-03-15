@@ -4,531 +4,1105 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Power Outages Analysis | BeautifulSoup</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
 
 <style>
+/* ─── CSS Variables ─────────────────────────────────────────── */
+:root {
+  --bg:          #080e1a;
+  --surface:     #0e1829;
+  --surface-2:   #13213a;
+  --surface-3:   #192a47;
+  --border:      #1f3356;
+  --border-soft: #162844;
+  --accent:      #3b82f6;
+  --accent-glow: rgba(59,130,246,0.18);
+  --accent-2:    #06b6d4;
+  --accent-3:    #10b981;
+  --warning:     #f59e0b;
+  --text:        #e8f0fe;
+  --text-mid:    #8ba3c7;
+  --text-dim:    #4a6380;
+  --mono:        'DM Mono', monospace;
+  --display:     'Syne', sans-serif;
+  --body:        'DM Sans', sans-serif;
+  --radius:      10px;
+  --radius-sm:   6px;
+  --shadow:      0 4px 24px rgba(0,0,0,0.45);
+}
+
 body {
-    margin: 0;
-    font-family: Arial, Helvetica, sans-serif;
-    background: #0f172a;
-    color: #f1f5f9;
+  font-family: var(--body);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1.7;
+  background-size: 48px 48px;
 }
 
+/* ─── Header ────────────────────────────────────────────────── */
 header {
-    background: #1e293b;
-    padding: 20px;
-    text-align: center;
-    border-bottom: 2px solid #334155;
+  position: relative;
+  background: linear-gradient(135deg, #0b1628 0%, #0e2040 60%, #091428 100%);
+  border-bottom: 1px solid var(--border);
+  padding: 60px 24px 52px;
+  text-align: center;
+  overflow: hidden;
 }
-
+.header-eyebrow {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 14px;
+}
 header h1 {
-    margin: 0;
-    font-size: 32px;
+  font-family: var(--display);
+  font-size: clamp(30px, 4vw, 52px);
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1.1;
+}
+.header-sub {
+  margin-top: 12px;
+  color: var(--text-mid);
+  font-size: 14px;
+  letter-spacing: 0.04em;
+}
+.header-tag {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.07em;
+  padding: 4px 13px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  color: var(--text-mid);
+  background: rgba(14,24,41,0.7);
 }
 
-header p {
-    margin-top: 8px;
-    color: #94a3b8;
-}
-
+/* ─── Nav ───────────────────────────────────────────────────── */
 nav {
-    text-align: center;
-    padding: 12px;
-    background: #111827;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(8,14,26,0.93);
+  backdrop-filter: blur(14px);
+  border-bottom: 1px solid var(--border-soft);
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  overflow-x: auto;
+  scrollbar-width: none;
+  gap: 0;
 }
 
 nav a {
-    color: #60a5fa;
-    margin: 0 15px;
-    text-decoration: none;
-    font-weight: bold;
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  text-decoration: none;
+  padding: 14px 13px;
+  white-space: nowrap;
+  border-bottom: 2px solid transparent;
+  transition: color 0.2s, border-color 0.2s;
+  flex-shrink: 0;
+}
+nav a:hover { color: var(--accent); border-bottom-color: var(--accent); }
+
+/* ─── Layout ────────────────────────────────────────────────── */
+.section-wrap {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 44px 20px;
 }
 
-nav a:hover {
-    text-decoration: underline;
-}
-
-section {
-    padding: 40px 20px;
-    max-width: 1000px;
-    margin: auto;
-}
-
+/* ─── Card ──────────────────────────────────────────────────── */
 .card {
-    background: #1e293b;
-    padding: 25px;
-    border-radius: 10px;
-    margin-bottom: 30px;
-    box-shadow: 0px 5px 15px rgba(0,0,0,0.3);
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius);
+  padding: 28px 30px;
+  margin-bottom: 22px;
+  box-shadow: var(--shadow);
+  position: relative;
+  overflow: hidden;
+}
+.card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(59,130,246,0.35), transparent);
 }
 
-h2 {
-    margin-top: 0;
-    color: #60a5fa;
+/* ─── Typography ────────────────────────────────────────────── */
+.section-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 6px;
+}
+.card h2 {
+  font-family: var(--display);
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 16px;
+  letter-spacing: -0.01em;
+}
+.card h3 {
+  font-family: var(--display);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-mid);
+  margin: 26px 0 10px;
+  letter-spacing: 0.01em;
+}
+p { color: var(--text-mid); margin-bottom: 12px; }
+p:last-child { margin-bottom: 0; }
+b, strong { color: var(--text); font-weight: 500; }
+ul { color: var(--text-mid); padding-left: 20px; line-height: 2.1; }
+ul li::marker { color: var(--accent); }
+a { color: var(--accent); }
+code {
+  font-family: var(--mono);
+  font-size: 12px;
+  background: var(--surface-3);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 1px 6px;
+  color: var(--accent-2);
 }
 
-h3 {
-    margin-top: 24px;
+/* ─── Iframe ────────────────────────────────────────────────── */
+.iframe-wrap {
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  border: 1px solid var(--border);
+  margin-top: 14px;
+}
+.iframe-label {
+  font-family: var(--mono);
+  font-size: 10.5px;
+  letter-spacing: 0.08em;
+  color: var(--text-dim);
+  padding: 8px 14px;
+  background: var(--surface-2);
+  border-bottom: 1px solid var(--border-soft);
+  text-transform: uppercase;
+}
+.iframe-wrap iframe {
+  width: 100%;
+  height: 380px;
+  border: none;
+  display: block;
+  background: white;
 }
 
-ul {
-    line-height: 1.8;
+/* ─── Info grid ─────────────────────────────────────────────── */
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 16px;
+}
+.info-block {
+  background: var(--surface-2);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm);
+  padding: 15px 17px;
+}
+.info-block .ib-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 7px;
+}
+.info-block .ib-value {
+  font-size: 14px;
+  color: var(--text-mid);
+  line-height: 1.65;
+}
+.info-block.span-2 { grid-column: 1 / -1; }
+
+/* ─── Metric cards ──────────────────────────────────────────── */
+.metrics-row {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 18px;
+}
+.metric-card {
+  flex: 1;
+  min-width: 150px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 18px 20px;
+}
+.metric-card .m-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 8px;
+}
+.metric-card .m-value {
+  font-family: var(--display);
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.1;
+}
+.metric-card .m-sub {
+  font-family: var(--mono);
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-top: 4px;
+}
+.metric-card.green { border-color: rgba(16,185,129,0.35); }
+.metric-card.green .m-value { color: var(--accent-3); }
+.metric-card.blue  { border-color: rgba(59,130,246,0.35); }
+.metric-card.blue  .m-value  { color: var(--accent); }
+.metric-card.amber { border-color: rgba(245,158,11,0.35); }
+.metric-card.amber .m-value  { color: var(--warning); }
+
+/* ─── Pill group ────────────────────────────────────────────── */
+.pill-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 12px;
+}
+.pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 5px 14px 5px 8px;
+  font-size: 12.5px;
+  font-family: var(--mono);
+  color: var(--text);
+}
+.pill-tag {
+  font-size: 9px;
+  font-weight: 600;
+  padding: 2px 7px;
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+.pill-tag.cat  { background: rgba(59,130,246,0.2);  color: #93c5fd; }
+.pill-tag.num  { background: rgba(16,185,129,0.2);  color: #6ee7b7; }
+.pill-tag.time { background: rgba(139,92,246,0.2);  color: #c4b5fd; }
+
+/* ─── Callout ───────────────────────────────────────────────── */
+.callout {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--accent);
+  border-radius: var(--radius-sm);
+  padding: 15px 18px;
+  margin-top: 14px;
+  font-size: 13.5px;
+  color: var(--text-mid);
+  line-height: 1.8;
+}
+.callout .callout-title {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 8px;
 }
 
-iframe {
-    width: 100%;
-    height: 400px;
-    border: none;
-    border-radius: 8px;
-    margin-top: 15px;
-    background: white;
+/* ─── Missingness bars ──────────────────────────────────────── */
+.miss-list { display: flex; flex-direction: column; gap: 8px; margin: 16px 0; }
+.miss-item {
+  display: flex;
+  align-items: center;
+  background: var(--surface-2);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm);
+  padding: 10px 16px;
+  gap: 16px;
+}
+.miss-item .mi-col {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--accent-2);
+  min-width: 180px;
+}
+.miss-item .mi-bar-wrap {
+  flex: 1;
+  height: 4px;
+  background: var(--surface-3);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.miss-item .mi-bar {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+}
+.miss-item .mi-count {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text-mid);
+  min-width: 80px;
+  text-align: right;
 }
 
-.results-box {
-    display: flex;
-    gap: 20px;
-    flex-wrap: wrap;
+/* ─── Hypothesis blocks ─────────────────────────────────────── */
+.hyp-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin: 18px 0;
 }
 
-.metric {
-    flex: 1;
-    min-width: 250px;
-    background: #0f172a;
-    padding: 20px;
-    border-radius: 8px;
-    border: 1px solid #334155;
+.hyp-block {
+  background: var(--surface-2);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm);
+  padding: 16px 18px;
+}
+.hyp-block .hyp-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 6px;
+}
+.hyp-block .hyp-value {
+  font-family: var(--display);
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--text);
+}
+.hyp-block.green { border-color: rgba(16,185,129,0.35); }
+.hyp-block.green .hyp-value { color: var(--accent-3); }
+.hyp-block.blue  { border-color: rgba(59,130,246,0.35); }
+.hyp-block.blue  .hyp-value  { color: var(--accent); }
+
+/* ─── Conclusion badge ──────────────────────────────────────── */
+.conclusion {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(16,185,129,0.1);
+  border: 1px solid rgba(16,185,129,0.3);
+  border-radius: var(--radius-sm);
+  padding: 10px 16px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #6ee7b7;
+  margin-top: 14px;
+}
+.conclusion.reject {
+  background: rgba(59,130,246,0.1);
+  border-color: rgba(59,130,246,0.3);
+  color: #93c5fd;
+}
+.conclusion::before { content: '●'; font-size: 8px; }
+
+/* ─── Pipeline ──────────────────────────────────────────────── */
+.pipeline {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin: 18px 0 6px;
+}
+.pipe-step {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 10px 15px;
+  font-size: 12px;
+  font-family: var(--mono);
+  text-align: center;
+  min-width: 95px;
+  line-height: 1.5;
+  color: var(--text);
+}
+.pipe-step .pipe-label {
+  font-size: 9px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+  margin-bottom: 3px;
+  display: block;
+}
+.pipe-arrow { color: var(--border); font-size: 16px; padding: 0 2px; flex-shrink: 0; }
+
+/* ─── Model table ───────────────────────────────────────────── */
+.model-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 16px;
+  font-size: 13px;
+  font-family: var(--mono);
+}
+.model-table th {
+  background: var(--surface-2);
+  color: var(--text-dim);
+  text-align: left;
+  padding: 10px 14px;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  border-bottom: 1px solid var(--border);
+}
+.model-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border-soft);
+  color: var(--text-mid);
+  vertical-align: top;
+  line-height: 1.6;
+}
+.model-table tr:last-child td { border-bottom: none; }
+.model-table tr.highlight td { background: rgba(16,185,129,0.05); color: var(--accent-3); }
+.tag-best {
+  background: rgba(16,185,129,0.2);
+  color: #6ee7b7;
+  font-size: 9px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  padding: 2px 8px;
+  border-radius: 999px;
+  margin-left: 6px;
 }
 
-.metric h3 {
-    margin: 0;
-    font-size: 18px;
+/* ─── Data table ────────────────────────────────────────────── */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 16px;
+  font-size: 13px;
+}
+.data-table th {
+  background: var(--surface-2);
+  color: var(--text-dim);
+  text-align: left;
+  padding: 9px 14px;
+  font-family: var(--mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  border-bottom: 1px solid var(--border);
+}
+.data-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border-soft);
+  color: var(--text-mid);
+  vertical-align: top;
+  line-height: 1.6;
+}
+.data-table tr:last-child td { border-bottom: none; }
+.data-table td:first-child  { color: var(--text-dim); font-family: var(--mono); font-size: 12px; }
+.data-table td:nth-child(2) { color: var(--accent-2); font-family: var(--mono); font-size: 12px; }
+
+/* ─── Fairness grid ─────────────────────────────────────────── */
+.fairness-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+  margin: 18px 0;
+}
+.fg-block {
+  background: var(--surface-2);
+  border: 1px solid var(--border-soft);
+  border-radius: var(--radius-sm);
+  padding: 18px;
+  text-align: center;
+}
+.fg-block .fg-label {
+  font-family: var(--mono);
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  margin-bottom: 8px;
+}
+.fg-block .fg-name {
+  font-family: var(--display);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 10px;
+}
+.fg-block .fg-stat {
+  font-family: var(--mono);
+  font-size: 12px;
+  color: var(--text-mid);
+  line-height: 1.9;
 }
 
-.metric p {
-    font-size: 20px;
-    font-weight: bold;
-    margin-top: 10px;
-}
-
+/* ─── Footer ────────────────────────────────────────────────── */
 footer {
-    text-align: center;
-    padding: 20px;
-    background: #111827;
-    color: #94a3b8;
+  text-align: center;
+  padding: 36px 20px;
+  border-top: 1px solid var(--border-soft);
+  background: var(--surface);
+}
+footer .f-title {
+  font-family: var(--display);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-mid);
+  margin-bottom: 5px;
+}
+footer .f-sub {
+  font-family: var(--mono);
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: var(--text-dim);
 }
 </style>
 </head>
-
 <body>
 
+<!-- ══ HEADER ══════════════════════════════════════════════════ -->
 <header>
-    <h1>Power Outages Analysis</h1>
-    <p>DSC 259R – Practice and Application | BeautifulSoup</p>
+  <div class="header-eyebrow">DSC 259R · Practice and Application</div>
+  <h1><span>Power Outages</span> Analysis</h1>
+  <p class="header-sub">BeautifulGroup &mdash; Major U.S. Power Outage Events &amp; Demand Loss Prediction</p>
 </header>
 
+<!-- ══ NAV ═════════════════════════════════════════════════════ -->
 <nav>
-    <a href="#overview">Overview</a>
-    <a href="#data">Data</a>
-    <a href="#eda">EDA</a>
-    <a href="#missingness">Missingness</a>
-    <a href="#hypothesis">Hypothesis Testing</a>
-    <a href="#modeling">Modeling</a>
-    <a href="#results">Results</a>
-    <a href="#fairness">Fairness Analysis</a>
+  <a href="#overview">Overview</a>
+  <a href="#data">Data</a>
+  <a href="#eda">EDA</a>
+  <a href="#missingness">Missingness</a>
+  <a href="#hypothesis">Hypothesis</a>
+  <a href="#prediction">Prediction</a>
+  <a href="#modeling">Baseline</a>
+  <a href="#lightgbm-model">Final Model</a>
+  <a href="#results">Results</a>
+  <a href="#fairness">Fairness</a>
 </nav>
 
-<section id="overview">
+<!-- ══ OVERVIEW ════════════════════════════════════════════════ -->
+<div class="section-wrap" id="overview">
 <div class="card">
-<h2>Project Overview</h2>
-<p>
-This project analyzes major power outages across the United States.
-Our goal is to predict outage <b>severity</b> using a regression approach.
-Severity is constructed from:
-</p>
-<ul>
-<li>OUTAGE.DURATION</li>
-<li>DEMAND.LOSS.MW</li>
-<li>CUSTOMERS.AFFECTED</li>
-</ul>
-<p>
-These components are log-transformed and standardized to create a continuous
-<b>Severity Score</b>.
-</p>
+  <div class="section-label">Project Overview</div>
+  
+  <h3>Team — BeautifulGroup</h3>
+  <table class="data-table" style="margin-top:18px;">
+    <thead>
+      <tr><th>Members</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>Ahyo Falick</td></tr>
+      <tr><td>Nadine Marcus</td></tr>
+      <tr><td>Brian Nam</td></tr>
+      <tr><td>Aryslan Vakilov</td></tr>
+    </tbody>
+  </table>
+  <h2>What are we building?</h2>
+  <p>
+    This project analyzes major power outages across the continental United States,
+    with a focus on predicting <strong>peak demand lost (in megawatts)</strong> at the
+    onset of an outage — before full resolution data is available.
+  </p>
+  <p>
+    Understanding demand loss helps utility companies allocate resources, plan emergency
+    responses, and communicate expected impact to customers in real time.
+  </p>
+  <div class="info-grid" style="margin-top:18px;">
+    <div class="info-block">
+      <div class="ib-label">Target Variable</div>
+      <div class="ib-value"><code>DEMAND.LOSS.MW</code> — peak megawatts of demand lost</div>
+    </div>
+    <div class="info-block">
+      <div class="ib-label">Problem Type</div>
+      <div class="ib-value">Regression &mdash; continuous real-valued output</div>
+    </div>
+    <div class="info-block">
+      <div class="ib-label">Primary Metric</div>
+      <div class="ib-value">Root Mean Squared Error (RMSE) in MW</div>
+    </div>
+    <div class="info-block">
+      <div class="ib-label">Model Progression</div>
+      <div class="ib-value">Random Forest baseline → LightGBM</div>
+    </div>
+  </div>
 </div>
-</section>
+</div>
 
-<section id="data">
+<!-- ══ DATA ════════════════════════════════════════════════════ -->
+<div class="section-wrap" id="data">
 <div class="card">
-<h2>Dataset</h2>
-<ul>
-<li>Power Outages Dataset</li>
-<li>Climate, cause, economic, and demographic features</li>
-<li>Feature engineering applied (log transforms, scaling)</li>
-</ul>
+  <div class="section-label">Dataset</div>
+  <h2>Where did the data come from?</h2>
+  <p>
+    Our <a href="https://engineering.purdue.edu/LASCI/research-data/outages">dataset</a>
+    covers 1,541 major outage events across the continental U.S. and includes
+    geographical, climatic, land-use, electricity consumption, and economic
+    characteristics of the affected states.
+  </p>
 
-<h3>Team – BeautifulSoup</h3>
-<ul>
-<li>Ahyo Fallick</li>
-<li>Aryslan Vakilov</li>
-<li>Nadine Marcus</li>
-<li>Brian Nam</li>
-</ul>
+  <table class="data-table" style="margin-top:18px;">
+    <thead>
+      <tr><th>#</th><th>Column</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>1</td><td>CAUSE.CATEGORY</td><td>Category of event causing the major power outage</td></tr>
+      <tr><td>2</td><td>DEMAND.LOSS.MW</td><td>Peak demand lost during the outage (megawatts)</td></tr>
+      <tr><td>3</td><td>CLIMATE.CATEGORY</td><td>"Warm", "Cold", or "Normal" — based on Oceanic Niño Index ±0.5°C threshold</td></tr>
+      <tr><td>4</td><td>CUSTOMERS.AFFECTED</td><td>Number of customers affected by the outage event</td></tr>
+    </tbody>
+  </table>
 </div>
-</section>
+</div>
 
-<section id="eda">
+<!-- ══ EDA ══════════════════════════════════════════════════════ -->
+<div class="section-wrap" id="eda">
 <div class="card">
-<h2>Exploratory Data Analysis</h2>
-<p>
-We conducted multiple bivariate analyses including scatter plots,
-box plots, and stacked bar charts to explore relationships between
-severity components and cause/climate categories.
-</p>
+  <div class="section-label">Exploratory Data Analysis</div>
+  <h2>What patterns exist in the data?</h2>
+  <p>
+    We conducted bivariate analyses including scatter plots, box plots, and stacked
+    bar charts to explore relationships between severity components and cause/climate categories.
+  </p>
 
-<h3>Example Plot 1: Duration vs Customers</h3>
-<iframe src="plots/duration_vs_customers.html"></iframe>
+  <h3>Duration vs. Customers Affected</h3>
+  <div class="iframe-wrap">
+    <div class="iframe-label">Duration vs. Customers</div>
+    <iframe src="plots/duration_vs_customers.html"></iframe>
+  </div>
 
-<h3>Example Plot 2: Duration by Cause Category</h3>
-<iframe src="plots/duration_by_cause.html"></iframe>
+  <h3>Duration by Cause Category</h3>
+  <div class="iframe-wrap">
+    <div class="iframe-label">Duration by Cause</div>
+    <iframe src="plots/duration_by_cause.html"></iframe>
+  </div>
 
-<h3>Example Plot 3: Duration vs Customers by Cause Category</h3>
-<iframe src="plots/duration_vs_customers_by_cause.html"></iframe>
+  <h3>Duration vs. Customers, Colored by Cause</h3>
+  <div class="iframe-wrap">
+    <div class="iframe-label">Duration vs. Customers by Cause</div>
+    <iframe src="plots/duration_vs_customers_by_cause.html"></iframe>
+  </div>
 
-<h3>Example Plot 4: Number of Outages by Cause and Climate Category</h3>
-<iframe src="plots/number_of_outages_by_cause_and_climate_category.html"></iframe>
+  <h3>Outage Count by Cause and Climate Category</h3>
+  <div class="iframe-wrap">
+    <div class="iframe-label">Outages by Cause &amp; Climate Category</div>
+    <iframe src="plots/number_of_outages_by_cause_and_climate_category.html"></iframe>
+  </div>
 
-<h3>Example Plot 5: Severity Level by Cause Category</h3>
-<iframe src="plots/severity_level_by_cause_category.html"></iframe>
+  <h3>Severity Level by Cause Category</h3>
+  <div class="iframe-wrap">
+    <div class="iframe-label">Severity by Cause Category</div>
+    <iframe src="plots/severity_level_by_cause_category.html"></iframe>
+  </div>
 </div>
-</section>
+</div>
 
-<section id="missingness">
+<!-- ══ MISSINGNESS ══════════════════════════════════════════════ -->
+<div class="section-wrap" id="missingness">
 <div class="card">
+  <div class="section-label">Missingness Analysis</div>
+  <h2>Is missing data random?</h2>
+  <p>
+    We examined missing values to determine whether data was missing at random (MAR)
+    or for structural reasons (NMAR). <code>DEMAND.LOSS.MW</code> had by far the most
+    missing values at 705 entries.
+  </p>
 
-<h2>Missingness Analysis</h2>
+  <div class="miss-list">
+    <div class="miss-item">
+      <span class="mi-col">OUTAGE.DURATION</span>
+      <div class="mi-bar-wrap"><div class="mi-bar" style="width:8%"></div></div>
+      <span class="mi-count">58 missing</span>
+    </div>
+    <div class="miss-item">
+      <span class="mi-col">DEMAND.LOSS.MW</span>
+      <div class="mi-bar-wrap"><div class="mi-bar" style="width:100%"></div></div>
+      <span class="mi-count">705 missing</span>
+    </div>
+    <div class="miss-item">
+      <span class="mi-col">CUSTOMERS.AFFECTED</span>
+      <div class="mi-bar-wrap"><div class="mi-bar" style="width:63%"></div></div>
+      <span class="mi-count">443 missing</span>
+    </div>
+  </div>
 
-<p>
-We examined missing values in the dataset to understand whether missing data
-occurred randomly or was associated with other variables. Several columns
-contained missing values, including OUTAGE.DURATION, DEMAND.LOSS.MW,
-and CUSTOMERS.AFFECTED, with DEMAND.LOSS.MW having the largest amount
-of missing data.
-</p>
+  <h3>Outage Duration by DEMAND.LOSS.MW Missingness</h3>
+  <div class="iframe-wrap">
+    <div class="iframe-label">Missing — Outage Duration</div>
+    <iframe src="plots/missing_duration.html"></iframe>
+  </div>
+  <p style="margin-top:12px;">
+    Duration distributions look similar regardless of whether <code>DEMAND.LOSS.MW</code>
+    is missing. A permutation test confirmed no dependence (<strong>p = 0.6824</strong>).
+  </p>
 
-<ul>
-<li>OUTAGE.DURATION – 58 missing values</li>
-<li>DEMAND.LOSS.MW – 705 missing values</li>
-<li>CUSTOMERS.AFFECTED – 443 missing values</li>
-</ul>
-
-<h3>Outage Duration by DEMAND.LOSS.MW Missingness</h3>
-<iframe src="plots/missing_duration.html"></iframe>
-
-<p>
-The distributions of outage duration look similar whether DEMAND.LOSS.MW
-is missing or present. A permutation test confirmed that missingness does
-not depend on outage duration (p = 0.6824).
-</p>
-
-<h3>Cause Category by DEMAND.LOSS.MW Missingness</h3>
-<iframe src="plots/missing_cause.html"></iframe>
-
-<p>
-However, missingness in DEMAND.LOSS.MW varies across outage causes.
-A permutation test showed strong evidence that missingness depends on
-CAUSE.CATEGORY (p &lt; 0.001), suggesting that missing data is related
-to outage type rather than outage duration.
-</p>
-
+  <h3>Cause Category by DEMAND.LOSS.MW Missingness</h3>
+  <div class="iframe-wrap">
+    <div class="iframe-label">Missing — Cause Category</div>
+    <iframe src="plots/missing_cause.html"></iframe>
+  </div>
+  <p style="margin-top:12px;">
+    Missingness varies significantly across cause categories. A permutation test showed
+    strong evidence of dependence on <code>CAUSE.CATEGORY</code> (<strong>p &lt; 0.001</strong>),
+    suggesting <code>DEMAND.LOSS.MW</code> is <strong>MAR</strong> with respect to outage type.
+  </p>
 </div>
-</section>
+</div>
 
-<section id="hypothesis">
+<!-- ══ HYPOTHESIS ═══════════════════════════════════════════════ -->
+<div class="section-wrap" id="hypothesis">
 <div class="card">
+  <div class="section-label">Hypothesis Testing</div>
+  <h2>Do severe weather outages last longer?</h2>
+  <p>
+    We formally tested whether outages caused by <strong>severe weather</strong>
+    have meaningfully longer durations than all other cause categories combined.
+  </p>
 
-<h2>Hypothesis Testing</h2>
+  <div class="info-grid" style="margin-top:16px;">
+    <div class="info-block">
+      <div class="ib-label">Null Hypothesis H₀</div>
+      <div class="ib-value">Mean outage duration for severe weather equals mean duration for all other causes.</div>
+    </div>
+    <div class="info-block">
+      <div class="ib-label">Alternative Hypothesis H₁</div>
+      <div class="ib-value">Mean outage duration for severe weather is <em>greater</em> than for other causes.</div>
+    </div>
+    <div class="info-block span-2">
+      <div class="ib-label">Test Statistic &amp; Method</div>
+      <div class="ib-value">
+        <code>T = mean(Duration<sub>severe</sub>) − mean(Duration<sub>other</sub>)</code><br>
+        Permutation test with 10,000 shuffles. P-value = proportion of permuted statistics ≥ observed.
+      </div>
+    </div>
+  </div>
 
-<p>
-Following our exploratory analysis, we formally tested whether outages caused by
-<b>severe weather</b> tend to last longer than outages caused by other factors.
-</p>
+  <h3>Results</h3>
+  <div class="hyp-grid">
+    <div class="hyp-block blue">
+      <div class="hyp-label">Observed Difference</div>
+      <div class="hyp-value">≈ 2,538 min</div>
+    </div>
+    <div class="hyp-block green">
+      <div class="hyp-label">P-value</div>
+      <div class="hyp-value">&lt; 0.001</div>
+    </div>
+  </div>
+    <div class="iframe-wrap">
+    <div class="iframe-label">Hypothesis Permutation - Difference in Mean Outage Duration</div>
+    <iframe src="plots/fig_hypothesis_permutation.html"></iframe>
+  </div>
+  
+  <div class="conclusion reject">
+    Reject H₀ — severe weather outages last ~42 hours longer on average
+  </div>
 
-<h3>Hypotheses</h3>
-
-<p>
-<b>Null Hypothesis (H₀):</b> The mean outage duration for severe weather outages
-is equal to the mean outage duration for all other causes.
-</p>
-
-<p>
-<b>Alternative Hypothesis (H₁):</b> The mean outage duration for severe weather outages
-is greater than the mean outage duration for other causes.
-</p>
-
-<h3>Test Statistic</h3>
-<p>
-Difference in mean outage duration:
-<br>
-<b>T = mean(Duration<sub>severe</sub>) − mean(Duration<sub>other</sub>)</b>
-</p>
-
-<h3>Method</h3>
-<ul>
-<li>Performed a permutation test with 10,000 permutations</li>
-<li>Randomly shuffled outage durations across all rows</li>
-<li>Recomputed the difference in means for each shuffle</li>
-<li>Constructed a null distribution of permuted differences</li>
-<li>Calculated the p-value as the proportion of permuted statistics ≥ observed statistic</li>
-</ul>
-
-<h3>Results</h3>
-
-<div class="results-box">
-
-<div class="metric">
-<h3>Observed Difference</h3>
-<p>≈ 2,538 minutes</p>
+  <p style="margin-top:16px;">
+    Strong statistical evidence that outage duration depends on cause category.
+    This motivates using cause-related variables as features in our prediction model.
+  </p>
+</div>
 </div>
 
-<div class="metric">
-<h3>P-value</h3>
-<p>&lt; 0.001</p>
-</div>
-
-</div>
-
-<p style="margin-top:20px;">
-The observed difference indicates that severe weather outages last, on average,
-approximately <b>42 hours longer</b> than outages caused by other factors.
-Since the p-value is less than 0.05, we reject the null hypothesis.
-</p>
-
-<p>
-There is strong statistical evidence that outage duration depends on cause category.
-This result supports the importance of weather-related variables and motivates
-the use of machine learning models for predicting outage severity.
-</p>
-
-</div>
-</section>
-
-<section id="modeling">
+<!-- ══ PREDICTION PROBLEM ═══════════════════════════════════════ -->
+<div class="section-wrap" id="prediction">
 <div class="card">
+  <div class="section-label">Prediction Problem</div>
+  <h2>What are we predicting — and why?</h2>
+  <p>
+    We frame our core task as a <strong>regression problem</strong>: given information
+    known at the moment an outage is first reported, predict
+    <strong>peak demand lost</strong> (<code>DEMAND.LOSS.MW</code>) before full
+    resolution data is available.
+  </p>
 
-<h2>Modeling Approach</h2>
+  <div class="info-grid" style="margin-top:16px;">
+    <div class="info-block">
+      <div class="ib-label">Response Variable</div>
+      <div class="ib-value">
+        <code>DEMAND.LOSS.MW</code><br>
+        Peak megawatts of demand lost. Predicting this helps utilities assess
+        severity and dispatch resources before an outage is resolved.
+      </div>
+    </div>
+    <div class="info-block">
+      <div class="ib-label">Problem Type</div>
+      <div class="ib-value">
+        <strong>Regression</strong> — continuous real-valued output. No natural class
+        boundary exists for demand loss, making classification inappropriate.
+      </div>
+    </div>
+    <div class="info-block span-2">
+      <div class="ib-label">Why RMSE over MAE?</div>
+      <div class="ib-value">
+        RMSE penalizes large errors more heavily than MAE — appropriate here because
+        underestimating a 2,000 MW loss is far more consequential than underestimating
+        a 50 MW loss. RMSE is also expressed in the same unit as the target (MW), keeping
+        results directly interpretable. R² is reported as a secondary variance indicator.
+      </div>
+    </div>
+  </div>
 
-<p>
-Our baseline model is a <b>Random Forest Regressor</b>.
-This ensemble model captures nonlinear relationships between
-economic, climate, and demographic variables and outage severity.
-</p>
+  <h3>Features &amp; Time-of-Prediction Justification</h3>
+  <p>All features are observable <strong>at the moment an outage is first reported</strong> — no post-event information is used during training.</p>
 
-<ul>
-<li>Train/Test Split: 80% / 20%</li>
-<li>Evaluation Metrics: RMSE and R²</li>
-<li>Feature Engineering: Log-transform + standardization</li>
-</ul>
+  <div class="pill-group">
+    <div class="pill"><span class="pill-tag time">Time</span>MONTH</div>
+    <div class="pill"><span class="pill-tag time">Time</span>YEAR</div>
+    <div class="pill"><span class="pill-tag num">Numeric</span>RES.SALES</div>
+    <div class="pill"><span class="pill-tag cat">Categorical</span>CAUSE.CATEGORY</div>
+    <div class="pill"><span class="pill-tag num">Numeric</span>PCT_WATER_TOT</div>
+  </div>
 
-<p>
-We improved the baseline model by using cross-validation for more reliable
-performance and tuning hyperparameters with GridSearch to optimize accuracy.
-We also analyzed feature importance to better understand the key drivers of outage severity.
-</p>
-
+  <div class="callout" style="margin-top:16px;">
+    <div class="callout-title">Why each feature is known at prediction time</div>
+    <strong>MONTH / YEAR</strong> — recorded the instant the outage event begins.<br>
+    <strong>CAUSE.CATEGORY</strong> — identified by operators at or shortly after outage onset (e.g., "severe weather" is apparent immediately).<br>
+    <strong>RES.SALES</strong> — regional residential electricity sales; a pre-existing characteristic of the affected area, independent of any specific outage.<br>
+    <strong>PCT_WATER_TOT</strong> — static geographic property of the state, fully known in advance.
+  </div>
 </div>
-</section>
+</div>
 
-<section id="xgboost-model">
+
+
+<!-- ══ MODELING APPROACH ════════════════════════════════════════ -->
+<div class="section-wrap" id="modeling">
 <div class="card">
+  <div class="section-label">Modeling Approach</div>
+  <h2>Baseline Model</h2>
+  <p>
+    Our baseline model is a <strong>Random Forest Regressor</strong>. This ensemble
+    model captures nonlinear relationships between economic, climate, and demographic
+    variables and outage severity.
+  </p>
 
-<h2>XGBoost Model</h2>
+  <div class="info-grid" style="margin-top:16px;">
+    <div class="info-block">
+      <div class="ib-label">Train / Test Split</div>
+      <div class="ib-value">80% / 20%</div>
+    </div>
+    <div class="info-block">
+      <div class="ib-label">Evaluation Metrics</div>
+      <div class="ib-value">RMSE and R²</div>
+    </div>
+    <div class="info-block span-2">
+      <div class="ib-label">Feature Engineering</div>
+      <div class="ib-value">Log-transform + standardization</div>
+    </div>
+  </div>
 
-<p>
-We trained an <b>XGBoost Regressor</b> as an additional boosting-based model
-to compare with the Random Forest baseline. XGBoost builds decision trees
-sequentially, allowing each new tree to correct the errors of previous trees.
-This makes it effective for capturing more complex nonlinear relationships in
-the outage data.
-</p>
-
-<ul>
-<li>Train/Test Split: 80% / 20%</li>
-<li>Evaluation Metrics: MAE, RMSE, and R²</li>
-<li>Feature Engineering: log-transform + standardization</li>
-</ul>
-
-<p>
-On the log-transformed target space, XGBoost improved substantially over the
-baseline model and demonstrated strong predictive performance.
-</p>
-
+  <p style="margin-top:16px;">
+    We improved the baseline by using <strong>cross-validation</strong> for more reliable performance
+    and tuning hyperparameters with <strong>GridSearch</strong> to optimize accuracy. We also analyzed
+    feature importance to better understand the key drivers of outage severity.
+  </p>
 </div>
-</section>
+</div>
 
-<section id="lightgbm-model">
+<!-- ══ XGBOOST ══════════════════════════════════════════════════ -->
+<div class="section-wrap" id="xgboost-model">
 <div class="card">
+  <div class="section-label">Intermediate Model</div>
+  <h2>XGBoost Regressor</h2>
+  <p>
+    We trained an <strong>XGBoost Regressor</strong> as an additional boosting-based
+    model to compare with the Random Forest baseline. XGBoost builds decision trees
+    sequentially, allowing each new tree to correct the errors of previous trees —
+    making it effective for capturing more complex nonlinear relationships in the outage data.
+  </p>
 
-<h2>LightGBM Model (Final Model)</h2>
+  <div class="info-grid" style="margin-top:16px;">
+    <div class="info-block">
+      <div class="ib-label">Train / Test Split</div>
+      <div class="ib-value">80% / 20%</div>
+    </div>
+    <div class="info-block">
+      <div class="ib-label">Evaluation Metrics</div>
+      <div class="ib-value">MAE, RMSE, and R²</div>
+    </div>
+    <div class="info-block span-2">
+      <div class="ib-label">Feature Engineering</div>
+      <div class="ib-value">Log-transform + standardization</div>
+    </div>
+  </div>
 
-<p>
-We then trained a <b>LightGBM Regressor</b> as our final model. LightGBM is a
-gradient boosting framework optimized for fast and efficient learning on structured
-tabular data. Its leaf-wise growth strategy allows it to capture highly complex
-patterns while maintaining strong computational efficiency.
-</p>
-
-<ul>
-<li>Train/Test Split: 80% / 20%</li>
-<li>Evaluation Metrics: MAE, RMSE, and R²</li>
-<li>Feature Engineering: log-transform + standardization</li>
-</ul>
-
-<p>
-Among all models tested, LightGBM achieved the best overall performance and was
-selected as the final model for outage severity prediction.
-</p>
-
+  <p style="margin-top:16px;">
+    On the log-transformed target space, XGBoost improved substantially over the
+    baseline model and demonstrated strong predictive performance.
+  </p>
 </div>
-</section>
+</div>
 
-<section id="results">
+<!-- ══ LIGHTGBM ══════════════════════════════════════════════════ -->
+<div class="section-wrap" id="lightgbm-model">
 <div class="card">
-<h2>Model Comparison Results</h2>
+  <div class="section-label">Final Model</div>
+  <h2>LightGBM Regressor</h2>
+  <p>
+    We trained a <strong>LightGBM Regressor</strong> as our final model. LightGBM is a
+    gradient boosting framework optimized for fast and efficient learning on structured
+    tabular data. Its leaf-wise growth strategy allows it to capture highly complex
+    patterns while maintaining strong computational efficiency.
+  </p>
 
-<div class="results-box">
+  <div class="info-grid" style="margin-top:16px;">
+    <div class="info-block">
+      <div class="ib-label">Train / Test Split</div>
+      <div class="ib-value">80% / 20%</div>
+    </div>
+    <div class="info-block">
+      <div class="ib-label">Evaluation Metrics</div>
+      <div class="ib-value">MAE, RMSE, and R²</div>
+    </div>
+    <div class="info-block span-2">
+      <div class="ib-label">Feature Engineering</div>
+      <div class="ib-value">Log-transform + standardization</div>
+    </div>
+  </div>
 
-<div class="metric">
-<h3>Baseline Model</h3>
-<p>
-Random Forest<br>
-R² ≈ 0.31<br>
-RMSE ≈ 2.11
-</p>
+  <p style="margin-top:16px;">
+    Among all models tested, LightGBM achieved the best overall performance and was
+    selected as the final model for outage severity prediction.
+  </p>
+</div>
 </div>
 
-<div class="metric">
-<h3>XGBoost</h3>
-<p>
-R² ≈ 0.83<br>
-RMSE ≈ 1.19<br>
-MAE ≈ 0.67
-</p>
-</div>
-
-<div class="metric">
-<h3>Final Model</h3>
-<p>
-LightGBM<br>
-R² ≈ 0.99<br>
-RMSE ≈ 0.28<br>
-MAE ≈ 0.11
-</p>
-</div>
-
-</div>
-
-<p style="margin-top:20px;">
-We compared three tree-based models for predicting outage severity:
-Random Forest, XGBoost, and LightGBM. While the Random Forest provided
-a strong baseline, the boosting-based models captured more complex
-relationships in the data and substantially improved predictive performance.
-</p>
-
-<p>
-LightGBM achieved the best results, with the highest R² and lowest error
-metrics, and was selected as the final model for predicting outage severity.
-</p>
-
-</div>
-</section>
-
-<section id="fairness">
+<!-- ══ RESULTS ═══════════════════════════════════════════════════ -->
+<div class="section-wrap" id="results">
 <div class="card">
+  <div class="section-label">Model Comparison</div>
+  <h2>Model Comparison Results</h2>
 
-<h2>Fairness Analysis</h2>
+  <div class="metrics-row">
+    <div class="metric-card">
+      <div class="m-label">Baseline Model</div>
+      <div class="m-value" style="font-size:15px;">Random Forest</div>
+      <div class="m-sub" style="margin-top:10px; line-height:1.9;">R² ≈ 0.31<br>RMSE ≈ 2.11</div>
+    </div>
+    <div class="metric-card blue">
+      <div class="m-label">XGBoost</div>
+      <div class="m-value" style="font-size:15px;">Intermediate</div>
+      <div class="m-sub" style="margin-top:10px; line-height:1.9;">R² ≈ 0.83<br>RMSE ≈ 1.19<br>MAE ≈ 0.67</div>
+    </div>
+    <div class="metric-card green">
+      <div class="m-label">Final Model</div>
+      <div class="m-value" style="font-size:15px;">LightGBM <span class="tag-best">Best</span></div>
+      <div class="m-sub" style="margin-top:10px; line-height:1.9;">R² ≈ 0.99<br>RMSE ≈ 0.28<br>MAE ≈ 0.11</div>
+    </div>
+  </div>
 
-<p>
-We evaluated the fairness of our final <b>LightGBM</b> model by comparing its
-performance across two seasonal groups: <b>Spring/Fall</b> and <b>Summer/Winter</b>.
-The goal was to test whether the model systematically performed worse for one
-group than the other on the held-out test set.
-</p>
-
-<ul>
-<li>Spring/Fall group size: 66</li>
-<li>Summer/Winter group size: 100</li>
-<li>Metric used for fairness comparison: R² in log space</li>
-<li>Statistical method: permutation test with 5,000 permutations</li>
-</ul>
-
-<div class="results-box">
-
-<div class="metric">
-<h3>Spring/Fall</h3>
-<p>
-R² ≈ 0.9878<br>
-MAE ≈ 0.1220
-</p>
+  <p style="margin-top:20px;">
+    We compared three tree-based models for predicting outage severity: Random Forest,
+    XGBoost, and LightGBM. While the Random Forest provided a strong baseline, the
+    boosting-based models captured more complex relationships in the data and
+    substantially improved predictive performance.
+  </p>
+  <p>
+    LightGBM achieved the best results, with the highest R² and lowest error metrics,
+    and was selected as the final model for predicting outage severity.
+  </p>
+</div>
 </div>
 
-<div class="metric">
-<h3>Summer/Winter</h3>
-<p>
-R² ≈ 0.9929<br>
-MAE ≈ 0.1056
-</p>
+<!-- ══ FAIRNESS ══════════════════════════════════════════════════ -->
+<div class="section-wrap" id="fairness">
+<div class="card">
+  <div class="section-label">Fairness Analysis</div>
+  <h2>Does the model perform equally across seasons?</h2>
+  <p>
+    We evaluated the fairness of our final <strong>LightGBM</strong> model by comparing
+    its performance across two seasonal groups: <strong>Spring/Fall</strong> and
+    <strong>Summer/Winter</strong>. The goal was to test whether the model systematically
+    performed worse for one group than the other on the held-out test set.
+  </p>
+
+  <div class="info-grid" style="margin-top:16px;">
+    <div class="info-block">
+      <div class="ib-label">Groups Compared</div>
+      <div class="ib-value">Spring/Fall (n = 66) vs. Summer/Winter (n = 100)</div>
+    </div>
+    <div class="info-block">
+      <div class="ib-label">Method</div>
+      <div class="ib-value">R² in log space &nbsp;·&nbsp; Permutation test with 5,000 permutations</div>
+    </div>
+  </div>
+
+  <div class="fairness-grid" style="margin-top:16px;">
+    <div class="fg-block">
+      <div class="fg-label">Spring / Fall</div>
+      <div class="fg-name">n = 66</div>
+      <div class="fg-stat">R² ≈ 0.9878<br>MAE ≈ 0.1220</div>
+    </div>
+    <div class="fg-block">
+      <div class="fg-label">Summer / Winter</div>
+      <div class="fg-name">n = 100</div>
+      <div class="fg-stat">R² ≈ 0.9929<br>MAE ≈ 0.1056</div>
+    </div>
+    <div class="fg-block">
+      <div class="fg-label">Permutation Test</div>
+      <div class="fg-name">p = 0.6851</div>
+      <div class="fg-stat">Observed Difference<br>≈ 0.0051</div>
+    </div>
+  </div>
+
+  <div class="conclusion">
+    Fail to reject H₀ — no strong statistical evidence of seasonal unfairness
+  </div>
+
+  <p style="margin-top:16px;">
+    The model achieved very high predictive performance in both seasonal groups,
+    with Summer/Winter performing slightly better than Spring/Fall. Overall, the
+    fairness analysis suggests our LightGBM model performs consistently across
+    both groups and does not systematically disadvantage one over the other.
+  </p>
+
+  <h3>Permutation Null Distribution</h3>
+  <div class="iframe-wrap">
+    <div class="iframe-label">Fairness — Permutation Null Distribution</div>
+    <iframe src="plots/fairness_permutation_null.html"></iframe>
+  </div>
+  <p style="margin-top:12px;">
+    The dashed vertical line marks the observed difference in R² between the two season
+    groups. Because the observed statistic is not extreme relative to the null
+    distribution, the permutation test indicates no statistically significant seasonal unfairness.
+  </p>
+
+  <h3>Residual Distribution by Season Group</h3>
+  <div class="iframe-wrap">
+    <div class="iframe-label">Fairness — Residual Distribution by Season</div>
+    <iframe src="plots/fairness_residual_distribution.html"></iframe>
+  </div>
+  <p style="margin-top:12px;">
+    The residual distributions are centered similarly for both groups, which suggests
+    that prediction errors are balanced across seasons. This provides additional
+    evidence that the final model behaves consistently for Spring/Fall and
+    Summer/Winter observations.
+  </p>
+</div>
 </div>
 
-<div class="metric">
-<h3>Permutation Test</h3>
-<p>
-Observed Difference ≈ 0.0051<br>
-p-value ≈ 0.6851
-</p>
-</div>
-
-</div>
-
-<p style="margin-top:20px;">
-The model achieved very high predictive performance in both seasonal groups,
-with Summer/Winter performing slightly better than Spring/Fall. However, the
-permutation test produced a p-value of 0.6851, so we fail to reject the null
-hypothesis. This means there is <b>no strong statistical evidence of seasonal
-unfairness</b> in the final model.
-</p>
-
-<p>
-Overall, the fairness analysis suggests that our LightGBM model performs
-consistently across the two season groups and does not systematically
-disadvantage one group over the other.
-</p>
-
-<h3>Permutation Null Distribution</h3>
-<iframe src="plots/fairness_permutation_null.html"></iframe>
-
-<p>
-This plot shows the null distribution of the permuted fairness test statistic.
-The dashed vertical line marks the observed difference in R² between the two
-season groups. Because the observed statistic is not extreme relative to the
-null distribution, the permutation test indicates no statistically significant
-seasonal unfairness.
-</p>
-
-<h3>Residual Distribution by Season Group</h3>
-<iframe src="plots/fairness_residual_distribution.html"></iframe>
-
-<p>
-The residual distributions are centered similarly for both groups, which suggests
-that prediction errors are balanced across seasons. This provides additional
-evidence that the final model behaves consistently for Spring/Fall and
-Summer/Winter observations.
-</p>
-
-</div>
-</section>
-
+<!-- ══ FOOTER ═══════════════════════════════════════════════════ -->
 <footer>
-© 2025 BeautifulSoup | DSC 259R Final Project
-Power Outages Analysis
+  <div class="f-title">Power Outages Analysis &nbsp;·&nbsp; BeautifulSoup</div>
+  <div class="f-sub">DSC 259R &nbsp;·&nbsp; 2025 &nbsp;·&nbsp; Falick &nbsp;·&nbsp; Vakilov &nbsp;·&nbsp; Marcus &nbsp;·&nbsp; Nam</div>
 </footer>
 
 </body>
