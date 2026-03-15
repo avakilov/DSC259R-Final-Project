@@ -588,6 +588,7 @@ footer .f-sub {
 <nav>
   <a href="#overview">Overview</a>
   <a href="#data">Data</a>
+  <a href="#cleaning">Data Cleaning</a>
   <a href="#eda">EDA</a>
   <a href="#missingness">Missingness</a>
   <a href="#hypothesis">Hypothesis</a>
@@ -663,10 +664,65 @@ footer .f-sub {
       <tr><th>#</th><th>Column</th><th>Description</th></tr>
     </thead>
     <tbody>
-      <tr><td>1</td><td>CAUSE.CATEGORY</td><td>Category of event causing the major power outage</td></tr>
-      <tr><td>2</td><td>DEMAND.LOSS.MW</td><td>Peak demand lost during the outage (megawatts)</td></tr>
+      <tr><td>1</td><td>DEMAND.LOSS.MW</td><td>Peak demand lost during the outage (megawatts)</td></tr>
+      <tr><td>2</td><td>CAUSE.CATEGORY</td><td>Category of event causing the major power outage</td></tr>
       <tr><td>3</td><td>CLIMATE.CATEGORY</td><td>"Warm", "Cold", or "Normal" — based on Oceanic Niño Index ±0.5°C threshold</td></tr>
       <tr><td>4</td><td>CUSTOMERS.AFFECTED</td><td>Number of customers affected by the outage event</td></tr>
+      <tr><td>5</td><td>MONTH</td><td>Month (ordinal) of when outage occurred</td></tr>
+      <tr><td>6</td><td>YEAR</td><td>Year of when outage occurred</td></tr>
+      <tr><td>7</td><td>PCT.WATER.TOT</td><td>Percentage water coverage of affected location</td></tr>
+    </tbody>
+  </table>
+</div>
+</div>
+
+<!-- ══ DATA CLEANING ════════════════════════════════════════════ -->
+<div class="section-wrap" id="cleaning">
+<div class="card">
+  <div class="section-label">Data Cleaning</div>
+  <h2>How did we prepare the data?</h2>
+  <p>
+    Before analysis, we performed several cleaning steps to ensure only meaningful,
+    valid data was used throughout the project.
+  </p>
+
+  <div class="info-grid" style="margin-top:16px;">
+    <div class="info-block">
+      <div class="ib-label">Column Selection</div>
+      <div class="ib-value">Extracted columns relevant to our analysis: <code>CAUSE.CATEGORY</code>, <code>OUTAGE.DURATION</code>, <code>CLIMATE.REGION</code>, <code>CLIMATE.CATEGORY</code>, <code>YEAR</code>, and <code>CUSTOMERS.AFFECTED</code>.</div>
+    </div>
+    <div class="info-block">
+      <div class="ib-label">Empty Row Removal</div>
+      <div class="ib-value">Dropped rows where all values were missing so only meaningful data is used for analysis.</div>
+    </div>
+    <div class="info-block">
+      <div class="ib-label">Grouped Aggregation</div>
+      <div class="ib-value">Grouped by <code>CLIMATE.REGION</code>, <code>CAUSE.CATEGORY</code>, and <code>CLIMATE.CATEGORY</code>, then dropped subcategory groups with no data using <code>dropna(how='all')</code>.</div>
+    </div>
+    <div class="info-block">
+      <div class="ib-label">Invalid Value Replacement</div>
+      <div class="ib-value">Replaced negative or zero values in <code>OUTAGE.DURATION</code> with <code>NaN</code> — these are not valid durations. Missing categorical values were replaced with <code>'NaN'</code> to avoid introducing bias.</div>
+    </div>
+  </div>
+
+  <h3>Sample Cleaned Data</h3>
+  <table class="data-table" style="margin-top:12px;">
+    <thead>
+      <tr>
+        <th>CAUSE.CATEGORY</th>
+        <th>DURATION</th>
+        <th>REGION</th>
+        <th>CATEGORY</th>
+        <th>CUSTOMERS.AFFECTED</th>
+        <th>YEAR</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr><td>severe weather</td><td>3060</td><td>East North Central</td><td>normal</td><td>70000</td><td>2011</td></tr>
+      <tr><td>intentional attack</td><td>1</td><td>East North Central</td><td>normal</td><td>NaN</td><td>2014</td></tr>
+      <tr><td>severe weather</td><td>3000</td><td>East North Central</td><td>cold</td><td>70000</td><td>2010</td></tr>
+      <tr><td>severe weather</td><td>2550</td><td>East North Central</td><td>normal</td><td>68200</td><td>2012</td></tr>
+      <tr><td>severe weather</td><td>1740</td><td>East North Central</td><td>warm</td><td>250000</td><td>2015</td></tr>
     </tbody>
   </table>
 </div>
@@ -676,7 +732,22 @@ footer .f-sub {
 <div class="section-wrap" id="eda">
 <div class="card">
   <div class="section-label">Exploratory Data Analysis</div>
+  
   <h2>What patterns exist in the data?</h2>
+  
+  <h3>Univariate Analysis &mdash; Demand Loss</h3>
+  <p>
+    We conducted univariate analyses on multiple variables to explore variation in data within columns
+    we're using in our model. Since we're aiming to predict demand loss, we want to see where data is centralized
+    and outliers involved.
+  </p>
+
+  <div class="iframe-wrap">
+    <div class="iframe-label">Demand Loss (MW) Distribution and Log Transformation</div>
+    <iframe src="plots/demand_loss_univariate.html"></iframe>
+  </div>
+
+  <h3>Bivariate Analysis</h3>
   <p>
     We conducted bivariate analyses including scatter plots, box plots, and stacked
     bar charts to explore relationships between severity components and cause/climate categories.
@@ -711,6 +782,152 @@ footer .f-sub {
     <div class="iframe-label">Severity by Cause Category</div>
     <iframe src="plots/severity_level_by_cause_category.html"></iframe>
   </div>
+  <h3>Aggregate Statistics by Month</h3>
+<p>
+  Mean outage duration, customers affected, and demand loss grouped by month —
+  revealing seasonal patterns in outage severity.
+</p>
+<div style="overflow-x:auto; margin-top:12px;">
+  <table class="dataframe data-table">
+    <thead>
+    <tr style="text-align: right;">
+        <th>Month</th>
+        <th>Avg Duration (min)</th>
+        <th>Avg Customers Affected</th>
+        <th>Avg Demand Loss (MW)</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>1</th>
+      <td>3,388</td>
+      <td>180,034</td>
+      <td>595</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>2,497</td>
+      <td>126,053</td>
+      <td>639</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>3,266</td>
+      <td>104,229</td>
+      <td>255</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>1,494</td>
+      <td>88,387</td>
+      <td>152</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>2,077</td>
+      <td>125,376</td>
+      <td>292</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>1,948</td>
+      <td>118,404</td>
+      <td>448</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>2,219</td>
+      <td>101,623</td>
+      <td>463</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>2,428</td>
+      <td>218,218</td>
+      <td>1,309</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>4,295</td>
+      <td>254,206</td>
+      <td>742</td>
+    </tr>
+    <tr>
+      <th>10</th>
+      <td>3,601</td>
+      <td>169,927</td>
+      <td>1,081</td>
+    </tr>
+    <tr>
+      <th>11</th>
+      <td>1,728</td>
+      <td>99,446</td>
+      <td>192</td>
+    </tr>
+    <tr>
+      <th>12</th>
+      <td>3,294</td>
+      <td>148,461</td>
+      <td>200</td>
+    </tr>
+  </tbody>
+</table>
+</div>
+
+<h3>Customers Affected by Climate Region and Year</h3>
+<p>
+  Mean customers affected per outage, grouped by climate region and year —
+  highlighting how geographic and temporal factors interact with outage scale.
+</p>
+<div style="overflow-x:auto; margin-top:12px;">
+  <table class="dataframe data-table">
+  <thead>
+    <tr style="text-align: right;">    
+      <th></th>
+      <th>CLIMATE REGION</th>
+      <th>YEAR</th>
+      <th>AVG CUSTOMERS AFFECTED</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>Central</td>
+      <td>2000</td>
+      <td>119,099.25</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>Central</td>
+      <td>2002</td>
+      <td>95,000</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>Central</td>
+      <td>2003</td>
+      <td>318,100</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>Central</td>
+      <td>2004</td>
+      <td>174,000</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>Central</td>
+      <td>2005</td>
+      <td>154,856.2</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>Central</td>
+      <td>2006</td>
+      <td>190,591.4</td>
+    </tr>
+  </tbody>
+  </table>
 </div>
 </div>
 
