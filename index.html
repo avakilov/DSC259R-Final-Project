@@ -803,13 +803,49 @@ footer .f-sub {
     <div class="iframe-label">Outages by Cause &amp; Climate Category</div>
     <iframe src="plots/number_of_outages_by_cause_and_climate_category.html"></iframe>
   </div>
-
+  <p>
+    Stacked bar chart showing the number of outages belonging to each cause category and climate category. 
+    Severe weather and intentional attacks make up the vast majority of outages and most outages 
+    seem to happen in a 'normal' climate.
+  </p>
+  
+<!-- 
   <h3>Severity Level by Cause Category</h3>
   <div class="iframe-wrap">
     <div class="iframe-label">Severity by Cause Category</div>
     <iframe src="plots/severity_level_by_cause_category.html"></iframe>
-  </div>
+  </div> -->
+
+  <h3>Interesting Aggregates</h3>
+  <p>
+    This section shows some of the plots we created using aggregate functions.
+  </p>
+  
   <h3>Aggregate Statistics by Month</h3>
+  <div class="iframe-wrap">
+    <div class="iframe-label">Sums of Severity Indicators by Month</div>
+    <iframe src="plots/z_score_by_month.png"></iframe>
+  </div>
+  <p>
+    The above plot shows each of the three severity indicators summed, grouped by month, and scaled using z-score. 
+    Here we see a large positive spike for `CUSTOMERS.AFFECTED` AND `DEMAND.LOSS.MW` in August and all three 
+    indiciators having a large negative spike in November. This could indicate that August is the month with the 
+    most severe power outages and November is the month with the least.
+  </p>
+
+  <h3>Number of Customers Affected Yearly by Region</h3>
+  <div class="iframe-wrap">
+    <div class="iframe-label">Customers Affected by Year and Region</div>
+    <iframe src="plots/z_score_by_month.png"></iframe>
+  </div>
+  <p>
+    For our final plot of this section, we show the above stacked barchart looking at the total number of customers 
+    affected by outages each year. Each bar is stacked according to climate region to give an indication of which 
+    regions were hit hardest each year. There is a lot to see here, but notably 2008 was a bad year for the South 
+    and the Southeast was hit by far the hardest in 2004. Also from this chart, we can see that West North Central 
+    is almost nonexistant, indicating that it might be the safest region to avoid power outages.
+  </p>
+  
 <p>
   Mean outage duration, customers affected, and demand loss grouped by month —
   revealing seasonal patterns in outage severity.
