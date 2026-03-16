@@ -688,7 +688,8 @@ footer .f-sub {
   <div class="info-grid" style="margin-top:16px;">
     <div class="info-block">
       <div class="ib-label">Column Selection</div>
-      <div class="ib-value">Extracted columns relevant to our analysis: <code>CAUSE.CATEGORY</code>, <code>OUTAGE.DURATION</code>, <code>CLIMATE.REGION</code>, <code>CLIMATE.CATEGORY</code>, <code>YEAR</code>, and <code>CUSTOMERS.AFFECTED</code>.</div>
+      <div class="ib-value">Extracted columns relevant to our analysis: <code>CAUSE.CATEGORY</code>, <code>OUTAGE.DURATION</code>, <code>CLIMATE.REGION</code>, <code>CLIMATE.CATEGORY</code>, 
+        <code>YEAR</code>, <code>CUSTOMERS.AFFECTED</code>, and <code>DEMAND.LOSS.MW</code>.</div>
     </div>
     <div class="info-block">
       <div class="ib-label">Temporal Data Cleaning</div>
@@ -697,8 +698,10 @@ footer .f-sub {
       </div>
     </div>
     <div class="info-block">
-      <div class="ib-label">Grouped Aggregation</div>
-      <div class="ib-value">Grouped by <code>CLIMATE.REGION</code>, <code>CAUSE.CATEGORY</code>, and <code>CLIMATE.CATEGORY</code>, then dropped subcategory groups with no data using <code>dropna(how='all')</code>.</div>
+      <div class="ib-label">Datatype Conversion</div>
+      <div class="ib-value">Using <code>df.info()</code> showed us that many columns that should be numeric were read in by default as objects. 
+        To correct this, we identified each object column that should have been numeric and manually converted them to the correct datatypes.
+      </div>
     </div>
     <div class="info-block">
       <div class="ib-label">Invalid Value Replacement</div>
@@ -707,89 +710,89 @@ footer .f-sub {
   </div>
 
   <h3>Sample Cleaned Data</h3>
-  <table class="data-table" style="margin-top:12px;">
+  <table border="1" class="dataframe">
     <thead>
-    <tr style="text-align: right;">
-      <th></th>
-      <th>YEAR</th>
-      <th>MONTH</th>
-      <th>RES.SALES</th>
-      <th>PCT_WATER_TOT</th>
-      <th>CAUSE.CATEGORY</th>
-      <th>OUTAGE.DURATION</th>
-      <th>CUSTOMERS.AFFECTED</th>
-      <th>DEMAND.LOSS.MW</th>
-      <th>OUTAGE.START</th>
-      <th>OUTAGE.RESTORATION</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>1</th>
-      <td>2011</td>
-      <td>7</td>
-      <td>2.33e+06</td>
-      <td>8.41</td>
-      <td>severe weather</td>
-      <td>3060.0</td>
-      <td>70000.0</td>
-      <td>NaN</td>
-      <td>2011-07-01 05:00:00</td>
-      <td>2011-07-03 08:00:00</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>2014</td>
-      <td>5</td>
-      <td>1.59e+06</td>
-      <td>8.41</td>
-      <td>intentional attack</td>
-      <td>1.0</td>
-      <td>NaN</td>
-      <td>NaN</td>
-      <td>2014-05-11 06:38:00</td>
-      <td>2014-05-11 06:39:00</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>2010</td>
-      <td>10</td>
-      <td>1.47e+06</td>
-      <td>8.41</td>
-      <td>severe weather</td>
-      <td>3000.0</td>
-      <td>70000.0</td>
-      <td>NaN</td>
-      <td>2010-10-26 08:00:00</td>
-      <td>2010-10-28 10:00:00</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>2012</td>
-      <td>6</td>
-      <td>1.85e+06</td>
-      <td>8.41</td>
-      <td>severe weather</td>
-      <td>2550.0</td>
-      <td>68200.0</td>
-      <td>NaN</td>
-      <td>2012-06-19 04:30:00</td>
-      <td>2012-06-20 11:00:00</td>
-    </tr>
-    <tr>
-      <th>5</th>
-      <td>2015</td>
-      <td>7</td>
-      <td>2.03e+06</td>
-      <td>8.41</td>
-      <td>severe weather</td>
-      <td>1740.0</td>
-      <td>250000.0</td>
-      <td>250.0</td>
-      <td>2015-07-18 02:00:00</td>
-      <td>2015-07-19 07:00:00</td>
-    </tr>
-  </tbody>
+      <tr style="text-align: right;">
+        <th></th>
+        <th>YEAR</th>
+        <th>MONTH</th>
+        <th>RES.SALES</th>
+        <th>PCT_WATER_TOT</th>
+        <th>CAUSE.CATEGORY</th>
+        <th>OUTAGE.DURATION</th>
+        <th>CUSTOMERS.AFFECTED</th>
+        <th>DEMAND.LOSS.MW</th>
+        <th>OUTAGE.START</th>
+        <th>OUTAGE.RESTORATION</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <th>1</th>
+        <td>2011</td>
+        <td>7</td>
+        <td>2.33e+06</td>
+        <td>8.41</td>
+        <td>severe weather</td>
+        <td>3060.0</td>
+        <td>70000.0</td>
+        <td>NaN</td>
+        <td>2011-07-01 05:00:00</td>
+        <td>2011-07-03 08:00:00</td>
+      </tr>
+      <tr>
+        <th>2</th>
+        <td>2014</td>
+        <td>5</td>
+        <td>1.59e+06</td>
+        <td>8.41</td>
+        <td>intentional attack</td>
+        <td>1.0</td>
+        <td>NaN</td>
+        <td>NaN</td>
+        <td>2014-05-11 06:38:00</td>
+        <td>2014-05-11 06:39:00</td>
+      </tr>
+      <tr>
+        <th>3</th>
+        <td>2010</td>
+        <td>10</td>
+        <td>1.47e+06</td>
+        <td>8.41</td>
+        <td>severe weather</td>
+        <td>3000.0</td>
+        <td>70000.0</td>
+        <td>NaN</td>
+        <td>2010-10-26 08:00:00</td>
+        <td>2010-10-28 10:00:00</td>
+      </tr>
+      <tr>
+        <th>4</th>
+        <td>2012</td>
+        <td>6</td>
+        <td>1.85e+06</td>
+        <td>8.41</td>
+        <td>severe weather</td>
+        <td>2550.0</td>
+        <td>68200.0</td>
+        <td>NaN</td>
+        <td>2012-06-19 04:30:00</td>
+        <td>2012-06-20 11:00:00</td>
+      </tr>
+      <tr>
+        <th>5</th>
+        <td>2015</td>
+        <td>7</td>
+        <td>2.03e+06</td>
+        <td>8.41</td>
+        <td>severe weather</td>
+        <td>1740.0</td>
+        <td>250000.0</td>
+        <td>250.0</td>
+        <td>2015-07-18 02:00:00</td>
+        <td>2015-07-19 07:00:00</td>
+      </tr>
+    </tbody>
   </table>
 </div>
 </div>
