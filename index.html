@@ -601,7 +601,7 @@ footer .f-sub {
 <!-- ══ OVERVIEW ════════════════════════════════════════════════ -->
 <div class="section-wrap" id="overview">
 <div class="card">
-  <div class="section-label">Project Overview</div>
+  <div class="section-label">Introduction</div>
   
   <h3>Team — BeautifulGroup</h3>
   <table class="data-table" style="margin-top:18px;">
@@ -986,8 +986,8 @@ footer .f-sub {
 <!-- ══ MISSINGNESS ══════════════════════════════════════════════ -->
 <div class="section-wrap" id="missingness">
 <div class="card">
-  <div class="section-label">Missingness Analysis</div>
-  <h2>Is missing data random?</h2>
+  <div class="section-label">Assessment of Missingness</div>
+  <h2>What kind of randomness do missing values exhibit?</h2>
   <h3>NMAR Analysis</h3>
   <p>
     We believe <code>DEMAND.LOSS.MW</code> is likely <strong>Not Missing At Random (NMAR)</strong>.
@@ -996,7 +996,9 @@ footer .f-sub {
     produce no estimate, so their values are absent precisely because they are small.
   </p>
   <p>
-    To make this <strong>MAR</strong>, we would want more information like knowing if demand-loss estimates are attempted when outages are below certain thresholds.
+    To make this <strong>MAR</strong>, we would want more information like knowing if demand-loss estimates are 
+    attempted when outages are below certain thresholds. Additional data that could explain missingness for this variable 
+    would be total company revenue as larger companies might be more willing to ignore small outages than smaller companies.
   </p>
 
   <div class="miss-list">
@@ -1124,7 +1126,7 @@ footer .f-sub {
 <!-- ══ PREDICTION PROBLEM ═══════════════════════════════════════ -->
 <div class="section-wrap" id="prediction">
 <div class="card">
-  <div class="section-label">Prediction Problem</div>
+  <div class="section-label">Framing a Prediction Problem</div>
   <h2>What are we predicting — and why?</h2>
   <p>
     We frame our core task as a <strong>regression problem</strong>: given information
@@ -1150,12 +1152,15 @@ footer .f-sub {
       </div>
     </div>
     <div class="info-block span-2">
-      <div class="ib-label">Why RMSE over MAE?</div>
+      <div class="ib-label">Why RMSE and R² over MAE?</div>
       <div class="ib-value">
         RMSE penalizes large errors more heavily than MAE — appropriate here because
         underestimating a 2,000 MW loss is far more consequential than underestimating
         a 50 MW loss. RMSE is also expressed in the same unit as the target (MW), keeping
-        results directly interpretable. R² is reported as a secondary variance indicator.
+        results directly interpretable. While RMSE quantifies the magnitude of prediction errors, 
+        R² measures the proportion of variance in the target variable that is 
+        explained by the model. This provides a different perspective on model performance by 
+        evaluating how well the predictors capture the overall variability in demand loss.
       </div>
     </div>
   </div>
@@ -1186,8 +1191,8 @@ footer .f-sub {
 <!-- ══ MODELING ══════════════════════════════════════════════════ -->
 <div class="section-wrap" id="modeling">
 <div class="card">
-  <div class="section-label">Modeling Approach</div>
-  <h2>Baseline Model</h2>
+  <div class="section-label">Baseline Model</div>
+  <h2>Random Forest as a Baseline</h2>
   <p>
     Our baseline is a <strong>Random Forest Regressor</strong> built in a single sklearn
     <code>Pipeline</code>: a <code>ColumnTransformer</code> one-hot encodes
@@ -1304,11 +1309,10 @@ footer .f-sub {
   <h3>Hyperparameters</h3>
   <div class="callout">
     <div class="callout-title">Selected configuration</div>
-    <code>learning_rate</code> = 0.02 &nbsp;·&nbsp;
-    <code>num_leaves</code> = 63 &nbsp;·&nbsp;
-    <code>subsample</code> = 0.8 &nbsp;·&nbsp;
-    <code>colsample_bytree</code> = 0.8 &nbsp;·&nbsp;
-    <code>reg_lambda</code> = 1.0 &nbsp;·&nbsp;
+    <code>learning_rate</code> = 0.03 &nbsp;·&nbsp;
+    <code>num_estimators</code> = 500 &nbsp;·&nbsp;
+    <code>num_leaves</code> = 31 &nbsp;·&nbsp;
+    <code>max_depth</code> = 6 &nbsp;·&nbsp;
     early stopping (patience = 200 rounds on validation MAE)
   </div>
   <p style="margin-top:10px;">
@@ -1325,8 +1329,10 @@ footer .f-sub {
     </div>
     <div class="metric-card green">
       <div class="m-label">Final · LightGBM <span class="tag-best">Best</span></div>
-      <div class="m-value">R² 0.989</div>
-      <div class="m-sub" style="line-height:1.9; margin-top:8px;">log-space · RMSE 0.299 · MAE 0.128<br>MW-space · MAE 396 MW (↓38%)</div>
+      <div class="m-value">R² 0.2308</div>
+      <div class="m-sub" style="line-height:1.9; margin-top:8px;">
+        log-space: R² 0.9943 · RMSE 0.2197 · MAE 0.0677<br>MW-space: R² 0.2842 · RMSE 3054 MW (↑99%) · MAE 361 MW (↓29%) 
+      </div>
     </div>
   </div>
  
@@ -1337,7 +1343,9 @@ footer .f-sub {
     Adding 48 features (economic, demographic, geographic) gives the model the context
     needed to distinguish a 100 MW event from a 10,000 MW one. The raw-space RMSE is
     higher than the baseline because the time-based test split contains harder, later-year
-    outages; the 38% MAE reduction reflects genuine accuracy gains.
+    outages; the 29% MAE reduction reflects genuine accuracy gains and the almost double R² value
+    shows that this model is able to capture the variation of the target feature much better than 
+    our baseline could.
   </div>
 </div>
 </div>
@@ -1369,17 +1377,17 @@ footer .f-sub {
     <div class="fg-block">
       <div class="fg-label">Spring / Fall</div>
       <div class="fg-name">n = 66</div>
-      <div class="fg-stat">R² ≈ 0.9878<br>MAE ≈ 0.1220</div>
+      <div class="fg-stat">R² ≈ 0.9907<br>MAE ≈ 0.1220</div>
     </div>
     <div class="fg-block">
       <div class="fg-label">Summer / Winter</div>
       <div class="fg-name">n = 100</div>
-      <div class="fg-stat">R² ≈ 0.9929<br>MAE ≈ 0.1056</div>
+      <div class="fg-stat">R² ≈ 0.9965<br>MAE ≈ 0.1056</div>
     </div>
     <div class="fg-block">
       <div class="fg-label">Permutation Test</div>
-      <div class="fg-name">p = 0.6851</div>
-      <div class="fg-stat">Observed Difference<br>≈ 0.0051</div>
+      <div class="fg-name">p = 0.6933</div>
+      <div class="fg-stat">Observed Difference<br>≈ 0.0058</div>
     </div>
   </div>
 
