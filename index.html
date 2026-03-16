@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Power Outages Analysis | BeautifulSoup</title>
+<title>Power Outages Analysis | BeautifulGroup</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,400&family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;1,9..40,300&display=swap" rel="stylesheet">
 
 <style>
@@ -653,7 +653,7 @@ footer .f-sub {
   <h2>Where did the data come from?</h2>
   <p>
     Our <a href="https://engineering.purdue.edu/LASCI/research-data/outages">dataset</a>
-    covers 1,541 major outage events across the continental U.S. and includes
+    covers 1,534 major outage events across the continental U.S. and includes
     geographical, climatic, land-use, electricity consumption, and economic
     characteristics of the affected states.
   </p>
@@ -745,6 +745,17 @@ footer .f-sub {
     <div class="iframe-label">Demand Loss (MW) Distribution and Log Transformation</div>
     <iframe src="plots/demand_loss_univariate.html"></iframe>
   </div>
+  <p>
+    The `DEMAND.LOSS.MW` variable contains substantial missingness (approximately 44% of observations). 
+    Among the non-missing values, summary statistics indicate a mean of 375.9 MW and a median of 175.5 MW, 
+    with a maximum value of 41,788 MW. The large difference between the mean and median, 
+    combined with a very high skewness value (15.88), indicates extreme right skew and the presence of significant outliers.
+
+    The raw distribution confirms this pattern, with most observations concentrated at relatively low demand loss levels 
+    and a long right tail driven by a small number of extreme events. After applying a log transformation, 
+    the distribution becomes more compressed and less skewed, reducing the influence of extreme values and producing a more stable 
+    distribution for modeling purposes.
+  </p>
 
   <h3>Bivariate Analysis</h3>
   <p>
@@ -757,18 +768,35 @@ footer .f-sub {
     <div class="iframe-label">Duration vs. Customers</div>
     <iframe src="plots/duration_vs_customers.html"></iframe>
   </div>
+  <p>
+    hen looking at the log distribution of our severity indicators, each of the feature plots showed a large spike around 0. 
+    The above scatter plot shows an abrupt dichotomy of 'normal' points and points at or near 0. 
+    This goes against our expectations as we expected longer outages to affect more customers.
+  </p>
 
   <h3>Duration by Cause Category</h3>
   <div class="iframe-wrap">
     <div class="iframe-label">Duration by Cause</div>
     <iframe src="plots/duration_by_cause.html"></iframe>
   </div>
+  <p>
+    Here, we show boxplots of log_duration when grouped by cause category. The groupings here look fairly normal, 
+    although it is clear that the intentional attack category has a large amount of points distributed near 0 
+    and that severe weather has far more points than the other categories.
+  </p>
 
   <h3>Duration vs. Customers, Colored by Cause</h3>
   <div class="iframe-wrap">
     <div class="iframe-label">Duration vs. Customers by Cause</div>
     <iframe src="plots/duration_vs_customers_by_cause.html"></iframe>
   </div>
+  <p>
+    The above plot again shows the log scatter plot of `CUSTOMERS.AFFECTED` vs `DURATION`, 
+    but this time the points are colored by cause category. Here it is very interesting to see that 
+    almost all of the points that appear at 0 `CUSTOMERS.AFFECTED` are colored red indicating they were caused by 
+    intentional attacks. Most of the other points appear blue corresponding to severe weather 
+    and the majority of these points lie within the range `LOG_CUSTOMERS = 10-14`.
+  </p>
 
   <h3>Outage Count by Cause and Climate Category</h3>
   <div class="iframe-wrap">
