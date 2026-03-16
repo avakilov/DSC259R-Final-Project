@@ -691,8 +691,10 @@ footer .f-sub {
       <div class="ib-value">Extracted columns relevant to our analysis: <code>CAUSE.CATEGORY</code>, <code>OUTAGE.DURATION</code>, <code>CLIMATE.REGION</code>, <code>CLIMATE.CATEGORY</code>, <code>YEAR</code>, and <code>CUSTOMERS.AFFECTED</code>.</div>
     </div>
     <div class="info-block">
-      <div class="ib-label">Empty Row Removal</div>
-      <div class="ib-value">Dropped rows where all values were missing so only meaningful data is used for analysis.</div>
+      <div class="ib-label">Temporal Data Cleaning</div>
+      <div class="ib-value">Combined <code>OUTAGE.START.DATE</code> and <code>OUTAGE.START.TIME</code> into a singluar timestamp column called <code>OUTAGE.START</code>. 
+        Likewise, <code>OUTAGE.RESTORATION.DATE</code> and <code>OUTAGE.RESTORATION.TIME</code> were combined into <code>OUTAGE.RESOTRATION</code>.
+      </div>
     </div>
     <div class="info-block">
       <div class="ib-label">Grouped Aggregation</div>
@@ -707,22 +709,87 @@ footer .f-sub {
   <h3>Sample Cleaned Data</h3>
   <table class="data-table" style="margin-top:12px;">
     <thead>
-      <tr>
-        <th>CAUSE.CATEGORY</th>
-        <th>DURATION</th>
-        <th>REGION</th>
-        <th>CATEGORY</th>
-        <th>CUSTOMERS.AFFECTED</th>
-        <th>YEAR</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr><td>severe weather</td><td>3060</td><td>East North Central</td><td>normal</td><td>70000</td><td>2011</td></tr>
-      <tr><td>intentional attack</td><td>1</td><td>East North Central</td><td>normal</td><td>NaN</td><td>2014</td></tr>
-      <tr><td>severe weather</td><td>3000</td><td>East North Central</td><td>cold</td><td>70000</td><td>2010</td></tr>
-      <tr><td>severe weather</td><td>2550</td><td>East North Central</td><td>normal</td><td>68200</td><td>2012</td></tr>
-      <tr><td>severe weather</td><td>1740</td><td>East North Central</td><td>warm</td><td>250000</td><td>2015</td></tr>
-    </tbody>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>YEAR</th>
+      <th>MONTH</th>
+      <th>RES.SALES</th>
+      <th>PCT_WATER_TOT</th>
+      <th>CAUSE.CATEGORY</th>
+      <th>OUTAGE.DURATION</th>
+      <th>CUSTOMERS.AFFECTED</th>
+      <th>DEMAND.LOSS.MW</th>
+      <th>OUTAGE.START</th>
+      <th>OUTAGE.RESTORATION</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>1</th>
+      <td>2011</td>
+      <td>7</td>
+      <td>2.33e+06</td>
+      <td>8.41</td>
+      <td>severe weather</td>
+      <td>3060.0</td>
+      <td>70000.0</td>
+      <td>NaN</td>
+      <td>2011-07-01 05:00:00</td>
+      <td>2011-07-03 08:00:00</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>2014</td>
+      <td>5</td>
+      <td>1.59e+06</td>
+      <td>8.41</td>
+      <td>intentional attack</td>
+      <td>1.0</td>
+      <td>NaN</td>
+      <td>NaN</td>
+      <td>2014-05-11 06:38:00</td>
+      <td>2014-05-11 06:39:00</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>2010</td>
+      <td>10</td>
+      <td>1.47e+06</td>
+      <td>8.41</td>
+      <td>severe weather</td>
+      <td>3000.0</td>
+      <td>70000.0</td>
+      <td>NaN</td>
+      <td>2010-10-26 08:00:00</td>
+      <td>2010-10-28 10:00:00</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>2012</td>
+      <td>6</td>
+      <td>1.85e+06</td>
+      <td>8.41</td>
+      <td>severe weather</td>
+      <td>2550.0</td>
+      <td>68200.0</td>
+      <td>NaN</td>
+      <td>2012-06-19 04:30:00</td>
+      <td>2012-06-20 11:00:00</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>2015</td>
+      <td>7</td>
+      <td>2.03e+06</td>
+      <td>8.41</td>
+      <td>severe weather</td>
+      <td>1740.0</td>
+      <td>250000.0</td>
+      <td>250.0</td>
+      <td>2015-07-18 02:00:00</td>
+      <td>2015-07-19 07:00:00</td>
+    </tr>
+  </tbody>
   </table>
 </div>
 </div>
@@ -1223,7 +1290,7 @@ footer .f-sub {
   <h3>Hyperparameter Tuning</h3>
   <p>
     We used <code>GridSearchCV</code> (5-fold CV, scoring = R²) over
-    <code>max_depth</code> ∈ {2, 4, 7, 10}, <code>n_estimators</code> ∈ {100, 200, 400},
+    <code>max_depth</code> ∈ {2, 4, 7, 10, 12}, <code>n_estimators</code> ∈ {100, 200, 400},
     <code>min_samples_split</code> ∈ {2, 5}, <code>min_samples_leaf</code> ∈ {1, 2}.
   </p>
   <div class="iframe-wrap">
@@ -1234,11 +1301,11 @@ footer .f-sub {
   <div class="info-grid" style="margin-top:16px;">
     <div class="info-block">
       <div class="ib-label">Best Params (GridSearch)</div>
-      <div class="ib-value">max_depth = 2 · n_estimators = 100 · min_samples_split = 2 · min_samples_leaf = 2</div>
+      <div class="ib-value">max_depth = 7 · n_estimators = 100 · min_samples_split = 2 · min_samples_leaf = 2</div>
     </div>
     <div class="info-block">
       <div class="ib-label">Best CV R²</div>
-      <div class="ib-value">−0.159</div>
+      <div class="ib-value">−0.024</div>
     </div>
   </div>
  
@@ -1246,25 +1313,25 @@ footer .f-sub {
   <div class="metrics-row">
     <div class="metric-card amber">
       <div class="m-label">Test R²</div>
-      <div class="m-value">0.027</div>
-      <div class="m-sub">explains ~3% of variance</div>
+      <div class="m-value">0.1316</div>
+      <div class="m-sub">explains ~13% of variance</div>
     </div>
     <div class="metric-card amber">
       <div class="m-label">Test RMSE</div>
-      <div class="m-value">2,439 MW</div>
+      <div class="m-value">1528 MW</div>
       <div class="m-sub">original scale</div>
     </div>
     <div class="metric-card amber">
       <div class="m-label">Test MAE</div>
-      <div class="m-value">649 MW</div>
+      <div class="m-value">490 MW</div>
       <div class="m-sub">original scale</div>
     </div>
   </div>
  
   <div class="callout" style="margin-top:14px; border-left-color: var(--warning);">
     <div class="callout-title">Is this a good model?</div>
-    No. An R² of 0.027 means the baseline barely outperforms predicting the mean.
-    The RMSE of ~2,439 MW is extremely large relative to the median demand loss (~175 MW),
+    This is a fair model. An R² of 0.13 means the baseline outperforms predicting the mean, but not by much.
+    The RMSE of ~1528 MW is extremely large relative to the median demand loss (~175 MW),
     and the negative CV R² during grid search confirms that five features with no
     target transformation are insufficient to capture the highly skewed distribution
     of <code>DEMAND.LOSS.MW</code>.
@@ -1331,8 +1398,8 @@ footer .f-sub {
   <div class="metrics-row">
     <div class="metric-card">
       <div class="m-label">Baseline · Random Forest</div>
-      <div class="m-value" style="font-size:16px; color:var(--warning);">R² 0.027</div>
-      <div class="m-sub" style="line-height:1.9; margin-top:8px;">RMSE 2,439 MW<br>MAE 649 MW</div>
+      <div class="m-value" style="font-size:16px; color:var(--warning);">R² 0.1316</div>
+      <div class="m-sub" style="line-height:1.9; margin-top:8px;">RMSE 1528 MW<br>MAE 490 MW</div>
     </div>
     <div class="metric-card green">
       <div class="m-label">Final · LightGBM <span class="tag-best">Best</span></div>
