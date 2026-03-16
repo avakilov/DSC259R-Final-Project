@@ -877,21 +877,7 @@ footer .f-sub {
     Here we see a large positive spike for `CUSTOMERS.AFFECTED` AND `DEMAND.LOSS.MW` in August and all three 
     indiciators having a large negative spike in November. This could indicate that August is the month with the 
     most severe power outages and November is the month with the least.
-  </p>
-
-  <h3>Number of Customers Affected Yearly by Region</h3>
-  <div class="iframe-wrap">
-    <div class="iframe-label">Customers Affected by Year and Region</div>
-    <iframe src="plots/customers_by_region.html"></iframe>
-  </div>
-  <p>
-    For our final plot of this section, we show the above stacked barchart looking at the total number of customers 
-    affected by outages each year. Each bar is stacked according to climate region to give an indication of which 
-    regions were hit hardest each year. There is a lot to see here, but notably 2008 was a bad year for the South 
-    and the Southeast was hit by far the hardest in 2004. Also from this chart, we can see that West North Central 
-    is almost nonexistant, indicating that it might be the safest region to avoid power outages.
-  </p>
-  
+  </p>  
 <p>
   Mean outage duration, customers affected, and demand loss grouped by month —
   revealing seasonal patterns in outage severity.
@@ -983,62 +969,19 @@ footer .f-sub {
 </table>
 </div>
 
-<h3>Customers Affected by Climate Region and Year</h3>
-<p>
-  Mean customers affected per outage, grouped by climate region and year —
-  highlighting how geographic and temporal factors interact with outage scale.
-</p>
-<div style="overflow-x:auto; margin-top:12px;">
-  <table class="dataframe data-table">
-  <thead>
-    <tr style="text-align: right;">    
-      <th></th>
-      <th>CLIMATE REGION</th>
-      <th>YEAR</th>
-      <th>AVG CUSTOMERS AFFECTED</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <th>0</th>
-      <td>Central</td>
-      <td>2000</td>
-      <td>119,099.25</td>
-    </tr>
-    <tr>
-      <th>1</th>
-      <td>Central</td>
-      <td>2002</td>
-      <td>95,000</td>
-    </tr>
-    <tr>
-      <th>2</th>
-      <td>Central</td>
-      <td>2003</td>
-      <td>318,100</td>
-    </tr>
-    <tr>
-      <th>3</th>
-      <td>Central</td>
-      <td>2004</td>
-      <td>174,000</td>
-    </tr>
-    <tr>
-      <th>4</th>
-      <td>Central</td>
-      <td>2005</td>
-      <td>154,856.2</td>
-    </tr>
-    <tr>
-      <th>5</th>
-      <td>Central</td>
-      <td>2006</td>
-      <td>190,591.4</td>
-    </tr>
-  </tbody>
-  </table>
-</div>
-</div>
+  <h3>Number of Customers Affected Yearly by Region</h3>
+  <div class="iframe-wrap">
+    <div class="iframe-label">Customers Affected by Year and Region</div>
+    <iframe src="plots/customers_by_region.html"></iframe>
+  </div>
+  <p>
+    For our final plot of this section, we show the above stacked barchart looking at the total number of customers 
+    affected by outages each year. Each bar is stacked according to climate region to give an indication of which 
+    regions were hit hardest each year. There is a lot to see here, but notably 2008 was a bad year for the South 
+    and the Southeast was hit by far the hardest in 2004. Also from this chart, we can see that West North Central 
+    is almost nonexistant, indicating that it might be the safest region to avoid power outages.
+  </p>
+</div>  
 
 <!-- ══ MISSINGNESS ══════════════════════════════════════════════ -->
 <div class="section-wrap" id="missingness">
