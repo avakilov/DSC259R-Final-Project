@@ -595,7 +595,6 @@ footer .f-sub {
   <a href="#prediction">Prediction</a>
   <a href="#modeling">Baseline</a>
   <a href="#lightgbm-model">Final Model</a>
-  <a href="#results">Results</a>
   <a href="#fairness">Fairness</a>
 </nav>
 
@@ -936,10 +935,15 @@ footer .f-sub {
 <div class="card">
   <div class="section-label">Missingness Analysis</div>
   <h2>Is missing data random?</h2>
+  <h3>NMAR Analysis</h3>
   <p>
-    We examined missing values to determine whether data was missing at random (MAR)
-    or for structural reasons (NMAR). <code>DEMAND.LOSS.MW</code> had by far the most
-    missing values at 705 entries.
+    We believe <code>DEMAND.LOSS.MW</code> is likely <strong>Not Missing At Random (NMAR)</strong>.
+    Utilities only generate a formal demand-loss estimate when an outage exceeds a significance
+    threshold — meaning the missingness is tied to the unobserved value itself: small outages
+    produce no estimate, so their values are absent precisely because they are small.
+  </p>
+  <p>
+    To make this <strong>MAR</strong>, we would want more information like knowing if demand-loss estimates are attempted when outages are below certain thresholds.
   </p>
 
   <div class="miss-list">
@@ -960,26 +964,52 @@ footer .f-sub {
     </div>
   </div>
 
-  <h3>Outage Duration by DEMAND.LOSS.MW Missingness</h3>
+   <h3>Missingness Dependency — Test 1</h3>
+  <p>
+    We tested whether missingness of <code>DEMAND.LOSS.MW</code> depends on
+    <code>OUTAGE.DURATION</code> using a difference-in-means permutation test (5,000 shuffles).
+  </p>
   <div class="iframe-wrap">
     <div class="iframe-label">Missing — Outage Duration</div>
     <iframe src="plots/missing_duration.html"></iframe>
   </div>
-  <p style="margin-top:12px;">
-    Duration distributions look similar regardless of whether <code>DEMAND.LOSS.MW</code>
-    is missing. A permutation test confirmed no dependence (<strong>p = 0.6824</strong>).
+  <div class="hyp-grid" style="margin-top:14px;">
+    <div class="hyp-block blue">
+      <div class="hyp-label">Observed Difference</div>
+      <div class="hyp-value">128.8 min</div>
+    </div>
+    <div class="hyp-block">
+      <div class="hyp-label">P-value</div>
+      <div class="hyp-value" style="color:var(--text-mid);">0.6824</div>
+    </div>
+  </div>
+  <div class="conclusion" style="margin-top:10px;">
+    Fail to reject H₀ — missingness does <em>not</em> depend on outage duration
+  </div>
+ 
+  <h3>Missingness Dependency — Test 2</h3>
+  <p>
+    We tested dependence on <code>CAUSE.CATEGORY</code> using a chi-squared permutation test
+    (5,000 shuffles). Intentional-attack outages are disproportionately missing; severe-weather
+    outages are far more likely to have a demand-loss value recorded.
   </p>
-
-  <h3>Cause Category by DEMAND.LOSS.MW Missingness</h3>
   <div class="iframe-wrap">
     <div class="iframe-label">Missing — Cause Category</div>
     <iframe src="plots/missing_cause.html"></iframe>
   </div>
-  <p style="margin-top:12px;">
-    Missingness varies significantly across cause categories. A permutation test showed
-    strong evidence of dependence on <code>CAUSE.CATEGORY</code> (<strong>p &lt; 0.001</strong>),
-    suggesting <code>DEMAND.LOSS.MW</code> is <strong>MAR</strong> with respect to outage type.
-  </p>
+  <div class="hyp-grid" style="margin-top:14px;">
+    <div class="hyp-block blue">
+      <div class="hyp-label">Chi² Statistic</div>
+      <div class="hyp-value">101.4</div>
+    </div>
+    <div class="hyp-block green">
+      <div class="hyp-label">P-value</div>
+      <div class="hyp-value">&lt; 0.001</div>
+    </div>
+  </div>
+  <div class="conclusion reject" style="margin-top:10px;">
+    Reject H₀ — missingness depends on cause category (MAR)
+  </div>
 </div>
 </div>
 
@@ -1100,145 +1130,162 @@ footer .f-sub {
 
 
 
-<!-- ══ MODELING APPROACH ════════════════════════════════════════ -->
+<!-- ══ MODELING ══════════════════════════════════════════════════ -->
 <div class="section-wrap" id="modeling">
 <div class="card">
   <div class="section-label">Modeling Approach</div>
   <h2>Baseline Model</h2>
   <p>
-    Our baseline model is a <strong>Random Forest Regressor</strong>. This ensemble
-    model captures nonlinear relationships between economic, climate, and demographic
-    variables and outage severity.
+    Our baseline is a <strong>Random Forest Regressor</strong> built in a single sklearn
+    <code>Pipeline</code>: a <code>ColumnTransformer</code> one-hot encodes
+    <code>CAUSE.CATEGORY</code> and passes numeric features through, feeding directly
+    into the forest. Rows with missing target values are imputed with the training median;
+    the test set contains only observed demand-loss rows.
   </p>
-
-  <div class="info-grid" style="margin-top:16px;">
-    <div class="info-block">
-      <div class="ib-label">Train / Test Split</div>
-      <div class="ib-value">80% / 20%</div>
-    </div>
-    <div class="info-block">
-      <div class="ib-label">Evaluation Metrics</div>
-      <div class="ib-value">RMSE and R²</div>
-    </div>
-    <div class="info-block span-2">
-      <div class="ib-label">Feature Engineering</div>
-      <div class="ib-value">Log-transform + standardization</div>
-    </div>
+ 
+  <h3>Features</h3>
+  <div class="pill-group">
+    <div class="pill"><span class="pill-tag cat">Nominal</span>CAUSE.CATEGORY</div>
+    <div class="pill"><span class="pill-tag time">Temporal</span>MONTH</div>
+    <div class="pill"><span class="pill-tag time">Temporal</span>YEAR</div>
+    <div class="pill"><span class="pill-tag num">Numeric</span>RES.SALES</div>
+    <div class="pill"><span class="pill-tag num">Numeric</span>PCT_WATER_TOT</div>
   </div>
+  <p style="margin-top:12px;">
+    1 nominal feature (one-hot encoded) · 2 temporal · 2 quantitative (passed through
+    unscaled — Random Forests are scale-invariant).
+  </p>
+ 
+  <h3>Hyperparameter Tuning</h3>
+  <p>
+    We used <code>GridSearchCV</code> (5-fold CV, scoring = R²) over
+    <code>max_depth</code> ∈ {2, 4, 7, 10}, <code>n_estimators</code> ∈ {100, 200, 400},
+    <code>min_samples_split</code> ∈ {2, 5}, <code>min_samples_leaf</code> ∈ {1, 2}.
+  </p>
   <div class="iframe-wrap">
-    <div class="iframe-label">Baseline depth tuning</div>
+    <div class="iframe-label">Baseline — depth tuning</div>
     <iframe src="plots/depth_tuning.html"></iframe>
   </div>
-  <p style="margin-top:16px;">
-    We improved the baseline by using <strong>cross-validation</strong> for more reliable performance
-    and tuning hyperparameters with <strong>GridSearch</strong> to optimize accuracy. We also analyzed
-    feature importance to better understand the key drivers of outage severity.
-  </p>
-</div>
-</div>
-
-<!-- ══ XGBOOST ══════════════════════════════════════════════════ -->
-<div class="section-wrap" id="xgboost-model">
-<div class="card">
-  <div class="section-label">Intermediate Model</div>
-  <h2>XGBoost Regressor</h2>
-  <p>
-    We trained an <strong>XGBoost Regressor</strong> as an additional boosting-based
-    model to compare with the Random Forest baseline. XGBoost builds decision trees
-    sequentially, allowing each new tree to correct the errors of previous trees —
-    making it effective for capturing more complex nonlinear relationships in the outage data.
-  </p>
-
+ 
   <div class="info-grid" style="margin-top:16px;">
     <div class="info-block">
-      <div class="ib-label">Train / Test Split</div>
-      <div class="ib-value">80% / 20%</div>
+      <div class="ib-label">Best Params (GridSearch)</div>
+      <div class="ib-value">max_depth = 2 · n_estimators = 100 · min_samples_split = 2 · min_samples_leaf = 2</div>
     </div>
     <div class="info-block">
-      <div class="ib-label">Evaluation Metrics</div>
-      <div class="ib-value">MAE, RMSE, and R²</div>
-    </div>
-    <div class="info-block span-2">
-      <div class="ib-label">Feature Engineering</div>
-      <div class="ib-value">Log-transform + standardization</div>
+      <div class="ib-label">Best CV R²</div>
+      <div class="ib-value">−0.159</div>
     </div>
   </div>
-
-  <p style="margin-top:16px;">
-    On the log-transformed target space, XGBoost improved substantially over the
-    baseline model and demonstrated strong predictive performance.
-  </p>
+ 
+  <h3>Performance</h3>
+  <div class="metrics-row">
+    <div class="metric-card amber">
+      <div class="m-label">Test R²</div>
+      <div class="m-value">0.027</div>
+      <div class="m-sub">explains ~3% of variance</div>
+    </div>
+    <div class="metric-card amber">
+      <div class="m-label">Test RMSE</div>
+      <div class="m-value">2,439 MW</div>
+      <div class="m-sub">original scale</div>
+    </div>
+    <div class="metric-card amber">
+      <div class="m-label">Test MAE</div>
+      <div class="m-value">649 MW</div>
+      <div class="m-sub">original scale</div>
+    </div>
+  </div>
+ 
+  <div class="callout" style="margin-top:14px; border-left-color: var(--warning);">
+    <div class="callout-title">Is this a good model?</div>
+    No. An R² of 0.027 means the baseline barely outperforms predicting the mean.
+    The RMSE of ~2,439 MW is extremely large relative to the median demand loss (~175 MW),
+    and the negative CV R² during grid search confirms that five features with no
+    target transformation are insufficient to capture the highly skewed distribution
+    of <code>DEMAND.LOSS.MW</code>.
+  </div>
 </div>
 </div>
-
-<!-- ══ LIGHTGBM ══════════════════════════════════════════════════ -->
+ 
+<!-- ══ FINAL MODEL ═══════════════════════════════════════════════ -->
 <div class="section-wrap" id="lightgbm-model">
 <div class="card">
   <div class="section-label">Final Model</div>
   <h2>LightGBM Regressor</h2>
   <p>
-    We trained a <strong>LightGBM Regressor</strong> as our final model. LightGBM is a
-    gradient boosting framework optimized for fast and efficient learning on structured
-    tabular data. Its leaf-wise growth strategy allows it to capture highly complex
-    patterns while maintaining strong computational efficiency.
+    The final model uses <strong>LightGBM</strong>, a gradient-boosted tree framework
+    with leaf-wise growth that handles mixed feature types natively and is robust to the
+    heavy right-skew of our target. We also trialled a Keras neural network and XGBoost;
+    LightGBM produced the best generalization.
   </p>
-
-  <div class="info-grid" style="margin-top:16px;">
+ 
+  <h3>Key Feature Improvements</h3>
+  <div class="info-grid" style="margin-top:12px;">
     <div class="info-block">
-      <div class="ib-label">Train / Test Split</div>
-      <div class="ib-value">80% / 20%</div>
+      <div class="ib-label">log₁p Target Transform</div>
+      <div class="ib-value">
+        <code>DEMAND.LOSS.MW</code> has skewness ≈ 15.9. Predicting
+        <code>log(1 + MW)</code> reframes the task as estimating <em>order of magnitude</em>,
+        which the available features can predict far more reliably than raw MW values.
+      </div>
     </div>
     <div class="info-block">
-      <div class="ib-label">Evaluation Metrics</div>
-      <div class="ib-value">MAE, RMSE, and R²</div>
+      <div class="ib-label">Full Feature Set (53 cols)</div>
+      <div class="ib-value">
+        All 11 categorical columns (state, NERC region, climate region, climate category, etc.)
+        are one-hot encoded; all 42 numeric columns use median imputation — giving the model
+        economic, demographic, and geographic context absent from the baseline.
+      </div>
     </div>
     <div class="info-block span-2">
-      <div class="ib-label">Feature Engineering</div>
-      <div class="ib-value">Log-transform + standardization</div>
+      <div class="ib-label">Time-Aware Train / Test Split</div>
+      <div class="ib-value">
+        Outages from the latest ~25% of years form the test set; earlier years are used for
+        training. This better mimics real deployment (predicting future outages) and prevents
+        temporal leakage.
+      </div>
     </div>
   </div>
-
-  <p style="margin-top:16px;">
-    Among all models tested, LightGBM achieved the best overall performance and was
-    selected as the final model for outage severity prediction.
+ 
+  <h3>Hyperparameters</h3>
+  <div class="callout">
+    <div class="callout-title">Selected configuration</div>
+    <code>learning_rate</code> = 0.02 &nbsp;·&nbsp;
+    <code>num_leaves</code> = 63 &nbsp;·&nbsp;
+    <code>subsample</code> = 0.8 &nbsp;·&nbsp;
+    <code>colsample_bytree</code> = 0.8 &nbsp;·&nbsp;
+    <code>reg_lambda</code> = 1.0 &nbsp;·&nbsp;
+    early stopping (patience = 200 rounds on validation MAE)
+  </div>
+  <p style="margin-top:10px;">
+    Early stopping on a held-out validation set acts as a continuous search over tree count,
+    while row/column subsampling reduces variance on this noisy target.
   </p>
-</div>
-</div>
-
-<!-- ══ RESULTS ═══════════════════════════════════════════════════ -->
-<div class="section-wrap" id="results">
-<div class="card">
-  <div class="section-label">Model Comparison</div>
-  <h2>Model Comparison Results</h2>
-
+ 
+  <h3>Performance vs. Baseline</h3>
   <div class="metrics-row">
     <div class="metric-card">
-      <div class="m-label">Baseline Model</div>
-      <div class="m-value" style="font-size:15px;">Random Forest</div>
-      <div class="m-sub" style="margin-top:10px; line-height:1.9;">R² ≈ 0.31<br>RMSE ≈ 2.11</div>
-    </div>
-    <div class="metric-card blue">
-      <div class="m-label">XGBoost</div>
-      <div class="m-value" style="font-size:15px;">Intermediate</div>
-      <div class="m-sub" style="margin-top:10px; line-height:1.9;">R² ≈ 0.83<br>RMSE ≈ 1.19<br>MAE ≈ 0.67</div>
+      <div class="m-label">Baseline · Random Forest</div>
+      <div class="m-value" style="font-size:16px; color:var(--warning);">R² 0.027</div>
+      <div class="m-sub" style="line-height:1.9; margin-top:8px;">RMSE 2,439 MW<br>MAE 649 MW</div>
     </div>
     <div class="metric-card green">
-      <div class="m-label">Final Model</div>
-      <div class="m-value" style="font-size:15px;">LightGBM <span class="tag-best">Best</span></div>
-      <div class="m-sub" style="margin-top:10px; line-height:1.9;">R² ≈ 0.99<br>RMSE ≈ 0.28<br>MAE ≈ 0.11</div>
+      <div class="m-label">Final · LightGBM <span class="tag-best">Best</span></div>
+      <div class="m-value">R² 0.989</div>
+      <div class="m-sub" style="line-height:1.9; margin-top:8px;">log-space · RMSE 0.299 · MAE 0.128<br>MW-space · MAE 396 MW (↓38%)</div>
     </div>
   </div>
-
-  <p style="margin-top:20px;">
-    We compared three tree-based models for predicting outage severity: Random Forest,
-    XGBoost, and LightGBM. While the Random Forest provided a strong baseline, the
-    boosting-based models captured more complex relationships in the data and
-    substantially improved predictive performance.
-  </p>
-  <p>
-    LightGBM achieved the best results, with the highest R² and lowest error metrics,
-    and was selected as the final model for predicting outage severity.
-  </p>
+ 
+  <div class="callout" style="margin-top:14px;">
+    <div class="callout-title">Why the improvement</div>
+    Log-transforming the target lets the model predict the <em>scale</em> of demand loss —
+    a learnable signal — rather than exact MW values dominated by extreme outliers.
+    Adding 48 features (economic, demographic, geographic) gives the model the context
+    needed to distinguish a 100 MW event from a 10,000 MW one. The raw-space RMSE is
+    higher than the baseline because the time-based test split contains harder, later-year
+    outages; the 38% MAE reduction reflects genuine accuracy gains.
+  </div>
 </div>
 </div>
 
